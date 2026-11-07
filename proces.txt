@@ -1835,3 +1835,45 @@ Wat ik deed:
 Volgende stap (planning rij 69): git starten als vangnet - akkoord
   gevraagd.
 Status: wacht op akkoord git init + eerste commit.
+Ilse: "ja, voer de drie commando's uit"
+Wat ik deed: git init -b main + git add . -> lijst getoond (24
+  bestanden; genegeerd: .claude/, proces.docx, Elche.png, __pycache__,
+  ~$-bestanden, mail_notariaat.txt). Vraag: Torevieja.xlsx meenemen?
+Ilse: "ik heb de exel compleet verwijderd. maak maar een commit"
+Wat ik deed: git add -A (verwijdering mee) -> 23 bestanden; eerste
+  commit e2dc2ec "Start project: ontwerp, beslissingslog en ruwe data".
+  Niets gepusht. beslissingslog.md rij 83.
+  NB: proces.txt en beslissingslog.md zijn na de commit opnieuw
+  gewijzigd (deze regels) -> komen in een volgende commit.
+Volgende stap (planning rij 69): PDF-stap 3 bouwen, stap per stap.
+Status: wacht op akkoord om te starten met pipeline.py stap 1 (ophalen).
+Ilse: "ja" (start stap 1 ophalen)
+==========================================================================
+PDF-STAP 3 - PIJPLIJN: stap 1 OPHALEN
+==========================================================================
+Wat ik deed:
+  - Structuur Excelbestanden onderzocht: tabel 2.4 = namen in kolom B,
+    regio (HOOFDLETTERS) en provincie-rijen zonder cijfers; jaren rij 11,
+    kwartalen rij 13; 2026-Q2 voorlopig "(*)". Tabel 4: 86 bladen,
+    2019-2025 allemaal 10 kolommen; provincie enkel op 1e rij van blok;
+    lege kolom G tussen prijzen en aantallen.
+  - Namen in tabel 2.4 (Alicante): Elche/Elx, Guardamar del Segura,
+    Orihuela, Pilar de la Horadada, Santa Pola, Torrevieja (elk 1x).
+  - pipeline.py: GEMEENTEN (INE-code als sleutel, rij 80) +
+    IDEALISTA_BESTANDEN + 5 leesfuncties.
+  - Eerste versie te traag (>2 min): taxatie las het Excelbestand 86x
+    opnieuw, verkopen zette 740.000 cellen een voor een om. Verbeterd
+    (1x inlezen, melt). Nu: verkopen ~27 s (oud .xls-formaat), rest < 5 s.
+  - Resultaat: idealista 2500 rijen (332 leeg, voor 2019) | verkopen
+    732600 (8116 namen x 90 kwartalen; Torrevieja 2020 klopt) | taxatie
+    19316 (66 bladen 2010-2026, 20 oudste overgeslagen: andere opbouw;
+    Torrevieja T4 2025 = 2122 klopt) | inwoners 3408 | coordinaten 6.
+  - Vaststelling: regio's met 1 provincie (bv. Madrid) hebben geen
+    provincierij -> provincie leeg; niet van belang (Alicante heeft er
+    wel een, 141 gemeentes).
+  - app.py: titel, hoofdvraag, stap 1 met 5 expanders (rijen, uitleg,
+    voorbeeld), caching. Automatisch getest (streamlit AppTest): geen
+    fouten, 5 expanders, 6 tabellen.
+Status: Ilse opent de app zelf; daarna commit + stap 2.
+Ilse: "het werkt. je mag een commit maken en dan gaan we verder met stap 2"
+Wat ik deed: commit "Stap 1 ophalen" (pipeline.py, app.py, logs).
