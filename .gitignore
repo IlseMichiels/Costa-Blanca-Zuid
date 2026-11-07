@@ -1,0 +1,18 @@
+# Persoonlijke bestanden — niet op GitHub (beslissingslog rij 73-74)
+mail_notariaat.txt
+Costa Blanca Zuid -proces.docx
+Elche.png
+
+# Tijdelijke Office-bestanden (Word/Excel die openstaan)
+~$*
+
+# Lokale Claude Code-instellingen
+.claude/settings.local.json
+
+# Geheimen (API-sleutels) — nooit in git
+.env
+
+# Tijdelijke Python-bestanden
+__pycache__/
+*.pyc
+.pytest_cache/

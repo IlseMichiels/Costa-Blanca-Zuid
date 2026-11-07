@@ -1,0 +1,98 @@
+Aankoop appartement met 2 slaapkamers voor toeristische verhuur aan costa blanca zuid:
+wat ik graag wil weten 
+Aankoopprijzen/m2 per gemeente voor een 2 slaapkamer appartement.
+Welke zijn de duurste gemeentes.
+Hoeveel appartementen zijn in de verschillende gemeentes verkocht de afgelopen jaren (welke zijn populaire gemeentes). 
+Welke gemeentes zijn wat aankoopprijs in trek aan het komen (aankoopprijzen stijgen)
+Hoe scoren de gemeentes wat verhuurbezetting, verhuuropbrengsten betreft, of welke regio's komen stilaan in trek bij toeristen om te huren.
+Eventueel: welke nationaliteit overheerst bij de eigenaars. (We willen bijvoorbeeld ook een regio waar vooral Belgen zitten) 
+Eventueel : waar zowel korte als lange termijn verhuur toegelaten is.
+Verder zouden we willen zien wat we zoal aan huurprijs zouden kunnen vragen eens we een regio hebben gekozen.
+Eventueel:  een idee krijgen vat wat dit op jaarbasis kan opbrengen eens alle kosten eraf zijn (lening, keyholder, belastingen, schoonmaak, internet, electriciteit..)
+
+==========================================================================
+DASHBOARDONTWERP (stap 1 van de 7 - "ontwerp eerst")
+Opgesteld 2026-11-04. Beslissingen: beslissingslog.md, rij 33-41.
+Daarna zelf natekenen op papier of in Excalidraw (rij 33).
+==========================================================================
+
+ALGEMEEN
+- Data: 6 kustgemeentes (Santa Pola, Elche, Guardamar del Segura,
+  Torrevieja, Orihuela, Pilar de la Horadada), bestaande appartementen,
+  2019-2025, per jaar (kwartalen enkel in E5).
+- Basistabel: gemeente | jaar | prijs_m2 | aantal_verkopen | inwoners |
+  verkopen_per_1000 | belgen | (taxatiewaarde_m2) -> 42 rijen.
+- Geen rangnummers: grafieken worden van hoog naar laag gesorteerd (rij 37).
+- Gemarkeerd = gemeente-jaar met minder dan 30 verkopen: WEL tonen, met
+  een zichtbare markering (rij 29, 39).
+- Ontbrekend = geen cijfer: NIET opvullen, "geen data" tonen (rij 40).
+
+INDELING VAN HET SCHERM (van boven naar onder, rij 38)
+Zijbalk links: filters (zie onderaan).
+
+1. TITEL + HOOFDVRAAG
+   "Hoe verhouden de zes kustgemeentes van de Costa Blanca Zuid zich tot
+   elkaar qua prijs per m2, aantal verkopen en prijsevolutie van bestaande
+   appartementen tussen 2019 en 2025?"
+
+2. E7 - CONCLUSIES + BEPERKINGEN
+   - Korte conclusie per vraag (prijs/m2, duur/goedkoop, aantal verkopen,
+     prijsstijging) + Belgen ter info.
+   - Beperkingen: Elche en Orihuela = hele gemeente (ook binnenland);
+     inwoners als noemer; gemeente-jaren met minder dan 30 verkopen;
+     ontbrekende gemeente-jaren.
+   - Verandert NIET mee met de filters (altijd 6 gemeentes, 2019-2025).
+
+3. E6 - KERNCIJFERS
+   - Bv. duurste gemeente 2025 (prijs/m2), sterkste prijsstijging
+     2019->2025, meeste verkopen 2025.
+   - Komt een cijfer uit een gemarkeerd gemeente-jaar: sterretje (*) +
+     uitleg eronder. Ontbrekende gemeente telt niet mee, wordt vermeld.
+   - Verandert NIET mee met de filters.
+
+4. E8 - KAART VAN DE KUST
+   - Elke gemeente = een punt/bol op de kust (geen ingekleurde vlakken,
+     rij 35).
+   - Op de kaart zelf: prijs/m2 2025.
+   - Tooltip (muis over de gemeente): aantal verkopen 2025 (absoluut en
+     per 1.000 inwoners), % stijging prijs/m2 2019->2025, aantal Belgen
+     (rij 36).
+   - Gemarkeerd: "minder dan 30 verkopen" in de tooltip.
+   - Ontbrekend: grijs punt met "geen data".
+   - Opgelet: het cijfer is dat van de hele gemeente (rij 24).
+
+5. E2 - LIJNGRAFIEK PRIJS/M2  (links)  naast  E3 - STAAFDIAGRAM % STIJGING (rechts)
+   E2: x = jaar 2019-2025, y = prijs/m2, een lijn per gemeente.
+       Beantwoordt: prijsniveau + versnelt of vlakt de stijging af?
+       Gemarkeerd jaar: open bolletje. Ontbrekend jaar: onderbreking in
+       de lijn (niet doortrekken).
+   E3: een staaf per gemeente = % stijging prijs/m2 2019->2025,
+       gesorteerd van hoog naar laag.
+       Gemarkeerd (2019 of 2025): lichtere staaf + voetnoot.
+       Ontbrekend (2019 of 2025): geen staaf, "geen data".
+
+6. E4 - LIJNGRAFIEK AANTAL VERKOPEN
+   x = jaar 2019-2025, y = aantal verkochte bestaande appartementen,
+   een lijn per gemeente. Absoluut of per 1.000 inwoners (keuze in de
+   zijbalk). Gemarkeerd: open bolletje. Ontbrekend: onderbreking.
+
+7. E5 - KWARTAALGRAFIEK CORONA  (in een uitklapblok, standaard dicht)
+   x = kwartaal 2019-2025, y = prijs/m2, een lijn per gemeente.
+   Doel: het corona-effect in detail bekijken (extra, rij 27).
+   Zelfde regels voor gemarkeerd en ontbrekend als E2.
+
+FILTERS IN DE ZIJBALK (rij 41)
+- Gemeentes aan/uit vinken (standaard alle 6 aan) -> werkt op E2, E3, E4,
+  E5 en E8.
+- Verkopen: absoluut / per 1.000 inwoners -> werkt op E4.
+- GEEN periode-schuifbalk (de % stijging 2019->2025 en de conclusies
+  zouden dan niet meer kloppen).
+- GEEN knop om gemarkeerde waarden te verbergen.
+- E6 kerncijfers en E7 conclusies veranderen niet mee.
+
+NOG TE CONTROLEREN IN STAP 2b (kan dit ontwerp nog wijzigen)
+- Zijn er kwartaalcijfers (nodig voor E5)?
+- Zijn er kleinere zones (postcode) voor Elche-kust en Orihuela Costa?
+- Hoeveel gemeente-jaren vallen onder de 30 verkopen?
+- Belgen per gemeente beschikbaar (INE Padron)?
+- Coordinaten van de 6 gemeentes voor de kaart (E8).

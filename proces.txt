@@ -1,0 +1,1837 @@
+PROCES - Analyse aankoop appartement voor toeristische verhuur, Costa Blanca Zuid
+==========================================================================
+Werkwijze: manuele modus, stap per stap. Claude gaat pas naar de volgende stap
+na akkoord van Ilse. Alles (ook "wat ik nu doe", vragen, antwoorden, aannames,
+bestanden en status) wordt hier gelogd.
+
+--------------------------------------------------------------------------
+[2026-11-02] STAP 0 - Vertrekpunt
+--------------------------------------------------------------------------
+Vraag van Ilse:
+  Een analyse maken over de aankoop van een woning aan de Costa Blanca Zuid om
+  te verhuren aan toeristen. Brainstormen tot de essentie, en uitkomen bij een
+  mission statement met heel duidelijke vragen die we nadien analyseren.
+  De 4 pijlers van computationeel denken gebruiken: decompositie,
+  patroonherkenning, abstractie en algoritme. Alles uitleggen, per pijler een
+  voorbeeld geven. Geen automodus, vragen stellen, nagaan of er goede data is.
+
+Wat ik nu doe:
+  - Brainstorming.txt gelezen (enige bestand in de map).
+  - proces.txt aangemaakt (dit bestand).
+  - De 4 pijlers uitgelegd en pijler 1 (decompositie) toegepast op de brainstorm.
+  - Vragen gesteld aan Ilse. Daarna stop ik en wacht ik op antwoord.
+
+Inhoud van Brainstorming.txt (samengevat):
+  1. Aankoopprijs per m2 per gemeente (appartement met 2 slaapkamers)
+  2. Duurste gemeentes
+  3. Aantal verkopen per gemeente de afgelopen jaren (populariteit)
+  4. Gemeentes waar de aankoopprijzen stijgen
+  5. Verhuurbezetting en verhuuropbrengst per gemeente, opkomende regio's
+  6. (eventueel) Nationaliteit van eigenaars, bv. een regio met veel Belgen
+  7. (eventueel) Waar zowel korte- als langetermijnverhuur toegelaten is
+  8. Welke huurprijs we kunnen vragen in een gekozen regio
+  9. (eventueel) Netto jaaropbrengst na alle kosten (lening, keyholder,
+     belastingen, schoonmaak, internet, elektriciteit, ...)
+
+--------------------------------------------------------------------------
+UITLEG - De 4 pijlers van computationeel denken
+--------------------------------------------------------------------------
+1. DECOMPOSITIE = een groot, vaag probleem opsplitsen in kleine deelvragen
+   die je apart kunt beantwoorden.
+   Dagelijks voorbeeld: "een feest organiseren" -> locatie, gasten, eten, muziek.
+   Hier: "waar kopen we best?" -> prijs, verkopen, verhuur, regels, kosten.
+
+2. PATROONHERKENNING = zien welke deelvragen op elkaar lijken of dezelfde
+   vorm hebben, zodat je ze op dezelfde manier kunt aanpakken.
+   Dagelijks voorbeeld: elke week boodschappen doen volgt hetzelfde lijstje.
+   Hier: vragen 1, 2, 3, 4 en 5 hebben allemaal de vorm
+   "een getal per gemeente per jaar". Eén tabelstructuur
+   (gemeente x jaar x maatstaf) kan ze allemaal dragen.
+
+3. ABSTRACTIE = weglaten wat niet essentieel is (of wat je niet kunt meten)
+   en een vereenvoudigd model overhouden.
+   Dagelijks voorbeeld: een metrokaart toont geen straten, enkel haltes en lijnen.
+   Hier: officiele cijfers bestaan zelden per aantal slaapkamers. Dan
+   abstraheren we "2-slaapkamerappartement" naar "prijs per m2 voor
+   appartementen" en rekenen we nadien om met een typische oppervlakte (bv. 70 m2).
+
+4. ALGORITME = een vast stappenplan dat je herhaalbaar uitvoert.
+   Dagelijks voorbeeld: een recept.
+   Hier: 1) gemeentes filteren op regelgeving, 2) een score per gemeente
+   (prijs, prijsgroei, bezetting, opbrengst), 3) een top 3 kiezen,
+   4) voor de top 3 een rendementsberekening maken.
+
+--------------------------------------------------------------------------
+STAP 1 - Pijler 1: DECOMPOSITIE van de brainstorm
+--------------------------------------------------------------------------
+Belangrijkste inzicht: de brainstorm bevat twee soorten vragen op twee momenten
+(een trechter):
+  FASE A - KIEZEN: welke gemeente(s)? -> gemeentes onderling vergelijken.
+  FASE B - DOORREKENEN: wat brengt een appartement in die gemeente op?
+           -> business case voor 1 tot 3 gemeentes.
+
+Opsplitsing in thema's (nummers verwijzen naar de lijst hierboven):
+  FASE A
+   A1 Aankoopmarkt - prijsniveau ...... vraag 1, 2 (prijs/m2, duurste)
+   A2 Aankoopmarkt - dynamiek ......... vraag 3, 4 (aantal verkopen, prijsgroei)
+   A3 Verhuurmarkt .................... vraag 5 (bezetting, opbrengst, groei)
+   A4 Regelgeving (filter) ............ vraag 7 (korte/lange termijn toegelaten)
+   A5 Sociale omgeving (voorkeur) ..... vraag 6 (Belgen in de buurt)
+  FASE B
+   B1 Inkomsten ....................... vraag 8 (huurprijs per nacht/maand, bezetting)
+   B2 Kosten en netto rendement ....... vraag 9
+
+Opmerkingen bij de decompositie:
+  - A4 is eigenlijk een FILTER (ja/nee): een gemeente waar toeristische
+    verhuur niet (meer) mag, valt af, hoe goed de rest ook scoort.
+  - A5 is een VOORKEUR, geen harde eis ("eventueel").
+  - B1 en B2 hangen af van de keuze in fase A.
+
+Status: wacht op antwoorden van Ilse op de vragen hieronder.
+
+Vragen aan Ilse (stap 1):
+  V1. Afbakening: welke gemeentes horen voor jou bij "Costa Blanca Zuid"?
+      Voorstel: Santa Pola, Elche (kust), Guardamar del Segura, Torrevieja,
+      Orihuela (Costa), Pilar de la Horadada, en eventueel binnenland
+      (Rojales/Ciudad Quesada, San Miguel de Salinas, Algorfa, Los Montesinos).
+      Hoort Alicante-stad erbij?
+  V2. Hoofddoel: puur rendement (huurinkomsten), waardestijging, of ook eigen
+      gebruik een deel van het jaar? (Dit verandert hoe we gemeentes scoren.)
+  V3. Periode: hoeveel jaar terug wil je kijken voor prijsevolutie en verkopen?
+      Voorstel: 2019-2025 (voor en na corona).
+  V4. Mag een 2-slaapkamerappartement benaderd worden als "appartement,
+      prijs per m2" (zie abstractie)?
+  V5. "Regio met veel Belgen": is dat een harde eis of een pluspunt?
+  V6. Er is geen projectopdracht (PDF) in deze map. Is dit een nieuw,
+      zelfstandig project, of hoort het bij een opdracht met vaste stappen?
+
+[2026-11-02] Onderbreking - vraag van Ilse:
+  "Schrijf alle beslissingen die ik neem op in beslissingslog.md"
+Wat ik nu doe:
+  - beslissingslog.md aangemaakt met de kolommen van de opleiding
+    (#, datum, beslissing, voorstel AI, wat ik deed, waarom, alternatief).
+  - De 4 beslissingen die Ilse al nam ingevuld (manuele modus, 4 pijlers,
+    mission statement als doel, logging in proces.txt + beslissingslog.md).
+  - Kolom "Waarom" open gelaten: die vult Ilse zelf in (no-AI gesprek).
+  - De 6 open vragen + de decompositie als "open beslissingen" opgelijst.
+  - Afspraak in het geheugen bewaard: elke beslissing van Ilse voortaan
+    meteen in beslissingslog.md.
+Status: wacht op (a) het "waarom" bij beslissingen 1-4 en (b) antwoorden V1-V6.
+
+[2026-11-02] Vraag van Ilse: "welke zijn de werkafspraken?"
+Antwoord: werkafspraken = afspraken over HOE we werken (rijen 1-4 in
+beslissingslog.md), in tegenstelling tot inhoudelijke keuzes = WAT we
+analyseren (gemeentes, periode, maatstaven, ...). Overzicht:
+  1. Manuele modus: geen automodus, Ilse geeft akkoord voor elke volgende stap.
+  2. Stap per stap: bij elke stap zeggen welke stap het is en wat ik doe.
+  3. Methode: de 4 pijlers (decompositie, patroonherkenning, abstractie, algoritme).
+  4. Einddoel verkenning: mission statement met analyseerbare vragen.
+  5. proces.txt: alles loggen (wat ik nu doe, vragen, antwoorden,
+     onderbrekingen, bestanden, aannames, status).
+  6. beslissingslog.md: elke beslissing van Ilse; "waarom" vult Ilse zelf in.
+  7. Claude stelt vragen waar een aanname nodig is, in plaats van stil te kiezen.
+Opmerking: 2, 5 (deels) en 7 komen uit eerdere afspraken/werkwijze en staan
+nog niet als aparte rij in beslissingslog.md (5 en 6 staan samen in rij 4).
+Vraag aan Ilse: a) elke afspraak een aparte rij, of b) werkafspraken uit het log?
+
+[2026-11-02] Antwoord van Ilse: "a"
+Wat ik nu doe:
+  - beslissingslog.md herschikt in twee tabellen:
+    "Werkafspraken" (rijen 1-8) en "Inhoudelijke keuzes" (nog leeg).
+  - Elke werkafspraak een eigen rij (1-7); 2 en 5 gedateerd 2026-11-01
+    (afgesproken in de vorige sessie).
+  - Rij 8 toegevoegd: de keuze voor optie a zelf (AI-voorstel, aanvaard).
+  - Doorlopende nummering: inhoudelijke keuzes starten bij 9.
+Status: wacht op het "waarom" bij rijen 1-8 en op antwoorden V1-V6 (stap 1).
+
+--------------------------------------------------------------------------
+[2026-11-02] STAP 2 - Nagaan welke data er bestaat per deelvraag
+--------------------------------------------------------------------------
+Vraag van Ilse: "vervolg"
+Interpretatie: akkoord om naar stap 2 te gaan. V1-V6 blijven open.
+Waarom dat kan: data zoeken hangt niet af van die antwoorden. Ik zoek voor
+de ruimste gemeentelijst (kust + binnenland). Het resultaat helpt net om
+V4 (2 slaapkamers -> prijs per m2) te beantwoorden.
+Wat ik nu doe:
+  - Per deelvraag (A1-A5, B1-B2) op het web zoeken naar bronnen.
+  - Per bron noteren: niveau gemeente?, periode, gratis/betalend,
+    betrouwbaarheid, en welke deelvraag ze beantwoordt.
+
+Resultaat zoektocht (2026-11-02) - LET OP: gevonden via webzoeken en
+samenvattingen, bestanden zelf nog NIET gedownload of geopend.
+
+A1/A2 Aankoopprijs, aantal verkopen, prijsevolutie
+  - Portal Estadístico del Notariado (penotariado.com): ECHTE verkoopprijzen
+    (notariële akten), prijs/m2, aantal verkopen, gemiddelde oppervlakte,
+    per gemeente, filter op type woning. Gratis. Downloadmogelijkheid
+    onduidelijk (interactieve kaart). Kleine gemeentes = kleine steekproef.
+  - Ministerio de Vivienda, "Valor tasado de vivienda libre": TAXATIEwaarde
+    per m2, per kwartaal, enkel gemeentes > 25.000 inwoners (Torrevieja,
+    Orihuela, Elche, Santa Pola?, Pilar de la Horadada?). Gratis Excel.
+  - Registradores (ERI, anuario): kwartaal, vooral provincie Alicante.
+  - Geen officiële bron per aantal slaapkamers gevonden -> V4 (abstractie
+    naar prijs/m2 appartement) lijkt nodig.
+A3 Verhuurmarkt
+  - INE "Medición del número de viviendas turísticas" (experimenteel):
+    aantal toeristische woningen + plaatsen per gemeente, via scraping van
+    Airbnb/Booking/Vrbo. Gratis. Sinds 2020, nu per kwartaal. GEEN bezetting
+    of prijs.
+  - GVA open data (dadesobertes.gva.es): register van alle legale
+    toeristische woningen per gemeente (CSV, wekelijks + historiek). Gratis.
+  - INE Encuesta de ocupación en apartamentos turísticos: bezetting en
+    tarieven, maar enkel voor grote toeristische punten (bv. Benidorm);
+    Torrevieja/Orihuela niet bevestigd.
+  - AirDNA / AirROI / Airbtics: bezetting, prijs per nacht (ADR),
+    jaaropbrengst per gemeente. Samenvatting gratis, export BETALEND.
+  - Inside Airbnb (gratis ruwe data): enkel Valencia-stad, NIET Alicante of
+    Costa Blanca Zuid (gecontroleerd op insideairbnb.com/get-the-data).
+A4 Regelgeving
+  - Decreto-ley 9/2024 (Generalitat Valenciana): gemeentes mogen aantal en
+    ligging van toeristische woningen beperken; gunstig gemeentelijk
+    stedenbouwkundig attest nodig vóór registratie. ~12.000 woningen
+    geschrapt uit het register. Geen dataset "per gemeente toegelaten ja/nee":
+    dit moet per gemeente opgezocht worden (gemeentelijke besluiten).
+A5 Belgen
+  - INE Padrón (bevolking per nationaliteit per gemeente): officieel, gratis.
+    Te controleren of België apart staat per gemeente. Torrevieja-padrón
+    vermeldt ~1.474-1.574 Belgen (2024).
+    LET OP: dit zijn ingeschreven BEWONERS, niet EIGENAARS (proxy).
+  - Registradores: aankopen per nationaliteit enkel nationaal, niet per
+    provincie of gemeente.
+B1/B2 Inkomsten en kosten
+  - B1: AirDNA-achtige bronnen (betalend) of handmatig vergelijkbare
+    advertenties bekijken.
+  - B2: geen dataset; kosten opzoeken (belasting niet-residenten, IBI,
+    gemeenschapskosten, ...) en zelf invullen -> rekenmodel.
+
+Conclusie: fase A (kiezen) is grotendeels met gratis officiële data te doen,
+behalve bezetting/opbrengst. Fase B vraagt aannames en een rekenmodel.
+
+Vragen aan Ilse (stap 2):
+  V7. Is een betalende bron (AirDNA, ~1 maand abonnement) een optie voor
+      bezetting en opbrengst, of blijven we bij gratis data?
+  V8. Akkoord om in stap 2b de 4 belangrijkste gratis bronnen echt te
+      downloaden en te bekijken (kolommen, periode, gemeentes) voor we
+      naar pijler 2 gaan?
+Status: wacht op antwoorden V1-V8.
+
+[2026-11-02] Vraag van Ilse: "stel me alle openstaande vragen één voor één"
+Wat ik nu doe: de open vragen één per keer stellen, in volgorde V1-V8,
+dan de decompositie (fase A/B), dan het "waarom" bij werkafspraken 1-8.
+Na elk antwoord: beslissingslog.md en proces.txt bijwerken.
+  V1 -> "Enkel kustgemeentes": Santa Pola, Elche (kust), Guardamar del
+        Segura, Torrevieja, Orihuela (Costa), Pilar de la Horadada.
+        (AI stelde kust + binnenland voor -> aangepast.) Log rij 9.
+        Gevolg: Elche en Orihuela zijn grote gemeentes met ook een
+        binnenlands deel; gemeentecijfers dekken dus meer dan de kust
+        (wordt een abstractievraag in pijler 3).
+  V2 -> "Rendement + eigen gebruik". Log rij 10.
+        Gevolg: in fase B moeten de weken eigen gebruik van de verhuurbare
+        nachten af. Nieuwe open vraag voor later: hoeveel weken, wanneer?
+  V3 -> "2019-2025". Log rij 11. Opmerking: INE toeristische woningen
+        start pas in 2020; Notariaatsportaal-reeks nog te controleren.
+  V4 -> "Ja, prijs/m2 appartement". Log rij 12. Nieuwe open vraag voor
+        later: welke oppervlakte voor een typisch 2-slaapkamerappartement.
+  V5 -> "Enkel ter info". Log rij 13. Belgen tonen, niet in de score.
+  V6 -> "op dit moment volgen we de 4 pijlers". Log rij 14. Of het project
+        daarna de 7 stappen uit de project-PDF volgt, blijft open.
+  V7 -> "Eerst gratis, later beslissen". Log rij 15.
+  V8 -> "Nee, eerst pijler 2". Log rij 16 (AI-voorstel verworpen).
+        Gevolg: pijler 2 steunt nog op zoekresultaten, niet op geopende
+        bestanden; data-controle (stap 2b) komt later.
+  Vraag 9 (decompositie) gesteld -> onderbroken door Ilse:
+  "wat is fase b al weer?"
+  Antwoord: fase B = doorrekenen. Nadat fase A 1 tot 3 gemeentes gekozen
+  heeft, berekenen we voor een appartement daar wat het netto oplevert:
+    B1 Inkomsten: prijs per nacht x verhuurde nachten (bezetting),
+       min de weken eigen gebruik (V2) -> bruto huurinkomsten per jaar.
+    B2 Kosten: lening, keyholder, belastingen (niet-residenten, IBI),
+       gemeenschapskosten, schoonmaak, internet, elektriciteit, ...
+    B1 - B2 = netto jaaropbrengst (vragen 8 en 9 uit de brainstorm).
+  Fase B gebeurt pas na fase A: kosten doorrekenen voor alle 6 gemeentes
+  is onnodig werk. Status: wacht op Ilse om vraag 9 opnieuw te stellen.
+  Ilse: "stel vraag 9 opnieuw"
+  Vraag 9 -> "Aanvaard". Log rij 17. Pijler 1 (decompositie) is afgerond.
+  Vraag 10: het "waarom" bij rijen 1-17 -> gevraagd in de chat.
+  Ilse: "één voor één" -> waaroms per rij gevraagd.
+  Waarom rij 1: "zo houd ik het overzicht en leer ik beter"
+  Waarom rij 2: "de stap voor stap methode maakt het me makkelijker om het
+                overzicht te bewaren en te leren"
+  Waarom rij 3: "dit is onderdeel van de cursus die ik volg en geeft me
+                meer inzicht"
+  Waarom rij 4: "een duidelijke mission statement is belangrijk om te weten
+                waar we exact naar toe willen en maakt het project mooi
+                omlijnd."
+  Waarom rij 5: "zo kan ik later alles nalezen en uitleggen want dit is
+                mijn eerste zelfstandige project"
+  Waarom rij 6: "zo zie ik later welke keuzes ik maakte en waarom, welke
+                data ik meeneem en welke niet."
+  Waarom rij 7: "zo begrijp ik beter wat we aan het doen zijn"
+  Waarom rij 8: "zo kan ik later ook uitleggen hoe ik met AI werkte"
+  Waarom rij 9: "omdat het ook een woning voor eigen gebruik is en we zelf
+                graag niet te ver van de kust verblijven"
+  Waarom rij 10: "we hebben zelf maar een beperkt aantal vakantiedagen en
+                 willen niet dat het leegstaat als we er zelf niet zijn +
+                 het dekt deels de kosten die we maken"
+  Waarom rij 11: "dat is een ruime periode en de data tijdens corona geeft
+                 ook inzicht op welk effect een pandemie kan hebben op de
+                 woningmarkt"
+  Waarom rij 12: "omdat er geen officiële data per aantal slaapkamers bestaat"
+                 Kanttekening AI: strikt genomen vonden we ze niet bij de
+                 zoektocht van stap 2 (bestanden nog niet geopend); voorstel
+                 om "bestaat" te nuanceren -> wacht op Ilse.
+  Waarom rij 13: "we vinden plaatsen waar veel belgische toeristen zijn
+                 leuk, maar het is geen must. Het is fijn om er een beetje
+                 info over te hebben."
+                 Kanttekening AI: Ilse spreekt over Belgische TOERISTEN; de
+                 gevonden bron (INE Padrón) meet Belgische INWONERS. Mogelijke
+                 bron voor toeristen per nationaliteit nog niet gezocht
+                 -> gemeld aan Ilse, open punt voor stap 2b.
+  Vraag over nuance rij 12 ("bestaat" -> "vonden we niet") nog niet
+  beantwoord -> opnieuw gesteld.
+  Nuance rij 12 -> "ja": aangepast naar "Omdat we geen officiële data per
+                 aantal slaapkamers vonden."
+  Waarom rij 14: "de pijlers maken deel uit van de 7 stappen en ik wil het
+                 echt in stukken aanpakken om echt inzicht te krijgen in de
+                 opdracht"
+                 Correctie: de 4 pijlers zijn GEEN alternatief voor de 7
+                 stappen maar een onderdeel ervan. Rij 14 herschreven; open
+                 vraag "volgt het project nadien de 7 stappen?" geschrapt
+                 (antwoord: ja). Geheugen-notitie bijgewerkt.
+  Waarom rij 15: "deze opdracht wordt later nog uitgebreid. Ik wil een
+                 analyse maken om één of een paar vragen van alle totaalvragen
+                 beantwoorden en hiervoor kan ik naar ik vermoed alvast met de
+                 gratis data beginnen."
+                 Belangrijk inzicht: de eerste analyse beantwoordt niet alle
+                 brainstormvragen, maar één of enkele. -> nieuwe open
+                 beslissing: welke vraag/vragen eerst (voor de mission
+                 statement).
+  Waarom rij 16: "ik wil eerst tot een mission statement komen en daarna
+                 volgt de echte dataverkenning. Op dit moment is het vooral
+                 belangrijk om te weten of er data is."
+  Waarom rij 17: "omdat ik graag de gehele opdracht wil opdelen. In dit
+                 eerste deel wil ik eerder een beeld van de woningprijzen en
+                 waarschijnlijk ga ik pas nadien dieper in gaan in het
+                 rendement."
+  -> Alle 17 rijen hebben nu een waarom. Vraag 10 afgerond.
+  Inzicht: rij 15 + 17 wijzen erop dat de eerste analyse focust op
+  woningprijzen (A1 prijsniveau + A2 dynamiek). NIET stil aangenomen:
+  gevraagd aan Ilse ter bevestiging.
+Status: wacht op bevestiging focus + akkoord voor pijler 2.
+Ilse: "ja, focus op woningprijzen, ga verder met pijler 2"
+  -> Log rij 18: focus = A1 + A2 (woningprijzen). Open beslissing
+     "welke vraag eerst" geschrapt.
+
+--------------------------------------------------------------------------
+[2026-11-02] STAP 3 - Pijler 2: PATROONHERKENNING
+--------------------------------------------------------------------------
+Uitleg: patroonherkenning = zoeken wat vragen (of data) gemeen hebben,
+zodat je ze met één aanpak kunt beantwoorden in plaats van elk apart.
+Dagelijks voorbeeld: wie elke maand dezelfde 4 rekeningen betaalt, maakt
+één overzicht "rekening x maand x bedrag" in plaats van 4 losse lijstjes.
+
+Wat ik nu doe: de 4 brainstormvragen binnen de focus (A1 + A2) naast
+elkaar leggen en de gemeenschappelijke patronen benoemen.
+  Q1 Aankoopprijs/m2 per gemeente (2-slaapkamerappartement -> rij 12)
+  Q2 Welke zijn de duurste gemeentes
+  Q3 Hoeveel appartementen verkocht per gemeente de afgelopen jaren
+  Q4 Welke gemeentes komen in trek (aankoopprijzen stijgen)
+
+Patroon 1 - Vier vragen, maar slechts twee maatstaven
+  Q1, Q2, Q4 gaan over PRIJS PER M2; Q3 over AANTAL VERKOPEN.
+Patroon 2 - Telkens dezelfde drie bewerkingen
+  niveau tonen (Q1, Q3) - rangschikken (Q2) - verandering in de tijd (Q4).
+  Q2 is Q1 gesorteerd; Q4 is Q1 van jaar tot jaar vergeleken.
+  -> 2 maatstaven x 3 bewerkingen dekken alle 4 vragen (en vullen een
+     gat: "waar stijgt het aantal verkopen?" volgt gratis uit hetzelfde).
+Patroon 3 - Eén tabelvorm volstaat
+  gemeente x jaar x {prijs_m2, aantal_verkopen}
+  6 kustgemeentes x 7 jaar (2019-2025) = 42 rijen.
+  Twee manieren om ze te lezen: per jaar (gemeentes vergelijken =
+  dwarsdoorsnede) of per gemeente (evolutie = tijdreeks).
+Patroon 4 - Relatieve woorden
+  "duurste", "populair", "in trek" zijn vergelijkingen. Ze vragen een
+  vergelijkingsbasis: onderling (6 gemeentes) of t.o.v. een referentie
+  (provincie Alicante, Spanje).
+Patroon 5 - Grootte-effect
+  Grote gemeentes (Elche, Orihuela, Torrevieja) hebben vanzelf meer
+  verkopen; bovendien dekken Elche en Orihuela ook binnenland. Absolute
+  aantallen vergelijken is dus scheef -> wordt een abstractievraag (pijler 3).
+Patroon 6 - Bronnen hebben dezelfde vorm
+  Notariaat (echte verkoopprijs) en Ministerie (taxatiewaarde) geven allebei
+  EUR/m2 per gemeente per periode -> passen in dezelfde tabel en kunnen
+  elkaar controleren. Verschil: ze meten iets anders, en het Ministerie
+  heeft enkel gemeentes > 25.000 inwoners (Guardamar valt wellicht af,
+  Pilar de la Horadada twijfelgeval - te controleren in stap 2b).
+
+Vragen aan Ilse (stap 3), één voor één:
+  P1. Aanvaard je patroon 1-3: 2 maatstaven x 3 bewerkingen, één tabel?
+  P2. Vergelijkingsbasis voor "duur" en "in trek": enkel onderling, of ook
+      t.o.v. provincie Alicante?
+  P3. "In trek" meten over welke termijn?
+Status: wacht op antwoord P1.
+  P1 -> "aanvaard". Log rij 19. Waarom gevraagd aan Ilse.
+  Waarom rij 19: "ik herken het patroon en ik wil het overzichtelijk houden"
+  P2 gesteld (vergelijkingsbasis).
+  P2 -> "Onderling + provincie". Log rij 20. Gevolg: tabel krijgt een extra
+        "gemeente" = provincie Alicante (referentie). Aanname AI: Notariaat
+        en Ministerie geven ook provinciecijfers -> te controleren in 2b.
+        Waarom gevraagd.
+  Ilse herziet: "ik had misschien beter gewoon onderling gekozen. De rest
+        van de provincie is eigenlijk niet van belang voor mij"
+        -> Rij 20 blijft staan (geschiedenis), gemarkeerd "herzien in
+           rij 21". Rij 21: enkel onderling. Provincie-referentie en de
+           controle daarvan in 2b vervallen.
+  P3 gesteld (termijn "in trek").
+  P3 -> "Hele periode + per jaar". Log rij 22. Waarom gevraagd.
+  Waarom rij 22: "zo heb ik een beter beeld van de hele beweging en
+                 misschien ook een beter beeld wat corona betekende"
+
+Samenvatting pijler 2 (afgerond):
+  - 4 vragen = 2 maatstaven (prijs/m2, aantal verkopen) x 3 bewerkingen
+    (niveau, rangschikken, verandering) -> één tabel gemeente x jaar
+    (6 x 7 = 42 rijen). (rij 19)
+  - Vergelijken: enkel de 6 kustgemeentes onderling. (rij 21)
+  - "In trek": % stijging 2019->2025 + jaarlijkse stijging. (rij 22)
+  - Doorgeschoven naar pijler 3 (abstractie): grootte-effect bij aantal
+    verkopen (patroon 5); Elche/Orihuela dekken ook binnenland;
+    verkoopprijs (Notariaat) vs taxatiewaarde (Ministerie) (patroon 6).
+Status: wacht op akkoord voor pijler 3 (abstractie).
+Ilse: "ja, ga verder met pijler 3"
+
+--------------------------------------------------------------------------
+[2026-11-02] STAP 4 - Pijler 3: ABSTRACTIE
+--------------------------------------------------------------------------
+Uitleg: abstractie = beslissen wat je weglaat of vereenvoudigt, en vastleggen
+hoe je iets precies meet. Je maakt een model van de werkelijkheid dat
+eenvoudig genoeg is om te berekenen, maar nog juist genoeg om je vraag te
+beantwoorden.
+Dagelijks voorbeeld: een metrokaart laat straten en echte afstanden weg;
+ze toont enkel haltes en lijnen, want meer heb je niet nodig om de juiste
+metro te nemen.
+Reeds gemaakte abstractie: rij 12 (2-slaapkamerappartement -> prijs/m2
+appartement).
+
+Wat ik nu doe: de open abstractievragen oplijsten en één voor één stellen.
+  AB1 Grootte-effect bij aantal verkopen: absoluut of per 1.000 inwoners?
+  AB2 Kust vs hele gemeente (Elche, Orihuela dekken ook binnenland).
+  AB3 Hoofdbron: Notariaat (verkoopprijs) of Ministerie (taxatiewaarde)?
+  AB4 Welke appartementen: nieuwbouw + bestaand, of enkel bestaand?
+  AB5 Tijdseenheid: jaar of kwartaal?
+Status: AB1 gesteld.
+  AB1 -> "Absoluut + per 1.000 inwoners". Log rij 23.
+        Kanttekening AI: aan de kust zijn veel eigenaars geen ingeschreven
+        inwoners (tweede verblijven), dus "per 1.000 inwoners" is ook een
+        benadering. Gemeld aan Ilse. Waarom gevraagd.
+  Waarom rij 23: "misschien is het marktvolume ook wel interessant. Een
+                 grote of kleine gemeente met veel aanbod kan misschien ook
+                 wijzen op leegloop."
+        Kanttekening AI: verkopen (transacties) is niet hetzelfde als aanbod
+        (te koop staande woningen). Veel verkopen = veel kopers EN verkopers;
+        leegloop zie je eerder aan veel aanbod + dalende prijs. Hypothese
+        genoteerd als idee voor later (aanbod = andere bron, bv. advertenties).
+  AB2 gesteld.
+  AB2 -> "Gemeente nu, kust later". Log rij 24. Nieuw controlepunt voor
+        stap 2b: toont het Notariaat zones kleiner dan de gemeente?
+        Waarom gevraagd.
+  Waarom rij 24: "de kustgedeeltes van deze gemeentes zijn ook interessant
+                 voor mij"
+  AB3 gesteld.
+  AB3 -> "Notariaat + Ministerie ter controle". Log rij 25.
+        Te controleren in stap 2b (nog niet geverifieerd!):
+        - gaat het Notariaat per gemeente terug tot 2019?
+        - kan je echt filteren op appartement?
+        - kan je de cijfers downloaden, of enkel bekijken op de kaart?
+        - splitst het Ministerie echt niet naar woningtype?
+        Waarom gevraagd.
+  Waarom rij 25: "omdat het echte verkoopprijzen zijn en ook het aantal
+                 verkopen. Zeker van de data"
+        Kanttekening AI: de bron is betrouwbaar (notariële akten), maar of
+        ze alles bevat wat we nodig hebben is nog niet gecontroleerd (2b).
+  AB4 gesteld -> onderbroken door Ilse: "Wat was mijn antwoord op ab3?"
+  Antwoord: keuze "Notariaat + Ministerie ter controle" (rij 25), waarom
+  "omdat het echte verkoopprijzen zijn en ook het aantal verkopen. Zeker
+  van de data". Status: wacht op Ilse om AB4 opnieuw te stellen.
+  Ilse: "ok, in orde. Terug naar AB4" -> AB4 opnieuw gesteld (zonder de
+        niet-geverifieerde bewering over nieuwbouw in Pilar de la Horadada).
+  AB4 -> "Enkel bestaand". Log rij 26 (AI-voorstel aangepast).
+        Gevolgen: kleinere steekproef per gemeente; extra controlepunt 2b:
+        splitst het Notariaat nieuwbouw/bestaand? Zo niet -> rij 26 herzien.
+        Ministerie (controle) splitst wellicht ook in nieuw/bestaand
+        (vivienda libre < 2 jaar / > 2 jaar) - te controleren.
+        Waarom gevraagd.
+  Waarom rij 26: "we willen liever een bestaand appartement wat we kunnen
+                 bezichtigen en waar er al mensen hebben verbleven"
+  AB5 gesteld.
+  AB5 -> "Per jaar, kwartaal als extra". Log rij 27. Controlepunt 2b: geeft
+        het Notariaat per gemeente ook kwartaalcijfers? Waarom gevraagd.
+  Waarom rij 27: "zo hou ik het overzicht en zie ik toch het corona-effect"
+
+Samenvatting pijler 3 (afgerond) - het vereenvoudigde model:
+  Eenheid ......... bestaand appartement, prijs per m2 (rij 12, 26)
+  Gebied .......... 6 kustgemeentes, als hele gemeente; kustzones Elche en
+                    Orihuela later als de data het toelaat (rij 9, 24)
+  Tijd ............ per jaar 2019-2025; kwartalen als extra (rij 11, 27)
+  Maatstaven ...... prijs/m2; aantal verkopen absoluut + per 1.000 inwoners
+                    (rij 19, 23)
+  Bronnen ......... Notariaat (hoofdbron), Ministerie (controle), INE Padrón
+                    (inwoners, Belgen ter info) (rij 13, 25)
+  Weggelaten ...... verhuur, regelgeving, rendement (later), provincie als
+                    referentie (rij 18, 21)
+  Controlelijst stap 2b (Notariaat): terug tot 2019? filter appartement?
+    splitsing nieuwbouw/bestaand? kwartalen? zones kleiner dan gemeente?
+    downloadbaar? + Ministerie: welke van de 6 gemeentes? woningtype?
+Status: wacht op akkoord voor pijler 4 (algoritme).
+Ilse: "ja, ga verder met pijler 4"
+
+--------------------------------------------------------------------------
+[2026-11-02] STAP 5 - Pijler 4: ALGORITME
+--------------------------------------------------------------------------
+Uitleg: een algoritme = een vast, herhaalbaar stappenplan met een duidelijke
+invoer en uitvoer. Iemand anders (of jij volgend jaar met nieuwe cijfers)
+moet het kunnen volgen en exact hetzelfde resultaat krijgen.
+Dagelijks voorbeeld: een recept - ingrediënten (invoer), stappen in vaste
+volgorde, een gerecht (uitvoer). Nog geen code: eerst het recept in gewone
+taal; in Python/pandas gieten komt later (volgende stappen van de opdracht).
+
+Wat ik nu doe: een stappenplan voorstellen dat alle keuzes uit rij 9-27
+gebruikt, en de keuzes die nog ontbreken één voor één vragen.
+
+Voorgesteld stappenplan:
+  INVOER: Notariaat, Ministerie, INE Padrón; 6 kustgemeentes; 2019-2025.
+  Stap 1 OPHALEN
+    a. Notariaat: per gemeente x jaar (en kwartaal), bestaande
+       appartementen: prijs/m2, aantal verkopen.
+    b. Ministerie: taxatiewaarde/m2 per gemeente x jaar (waar beschikbaar).
+    c. INE Padrón: inwoners en Belgen per gemeente x jaar.
+  Stap 2 CONTROLEREN
+    a. Ontbrekende gemeente-jaren oplijsten (niet stil opvullen).
+    b. Te weinig verkopen in een cel -> markeren als onbetrouwbaar.
+    c. Notariaat vs Ministerie vergelijken; groot verschil -> markeren.
+  Stap 3 SAMENVOEGEN
+    Eén tabel: gemeente | jaar | prijs_m2 | aantal_verkopen | inwoners |
+    verkopen_per_1000 | belgen | (taxatiewaarde_m2) -> 42 rijen.
+  Stap 4 BEREKENEN (per gemeente)
+    a. Prijsniveau en rang (duurste -> goedkoopste).
+    b. % stijging prijs/m2 2019->2025 en rang.
+    c. Jaarlijkse % stijging prijs/m2 (versnelt/vlakt af? corona?).
+    d. Idem b-c voor aantal verkopen.
+  Stap 5 TONEN
+    Rangschikkingstabel; lijngrafiek prijs/m2 per gemeente 2019-2025;
+    staafdiagram % stijging; kwartaalgrafiek rond corona (extra);
+    Belgen als info-kolom.
+  Stap 6 BESLUITEN
+    Antwoord op Q1-Q4 + beperkingen (gemeente i.p.v. kust, inwoners als
+    proxy, kleine aantallen).
+  UITVOER: tabel + grafieken + korte conclusie per vraag.
+
+Vragen aan Ilse (stap 5), één voor één:
+  AL1 Aanvaard je dit stappenplan?
+  AL2 Drempel "te weinig verkopen" in een cel?
+  AL3 Op welk jaar baseren we "duurste" (prijsniveau)?
+  AL4 Prijs en verkopen apart rangschikken of in één score?
+Status: AL1 gesteld.
+  AL1 -> "aanvaard". Log rij 28. Waarom gevraagd.
+  Waarom rij 28: "zo is het logisch opgebouwd en controleer ik eerst de data"
+  AL2 gesteld.
+  AL2 -> "30, voorlopig". Log rij 29. Waarom gevraagd.
+  Waarom rij 29 (eerste antwoord): "ik denk dat het beeld duidelijker wordt
+        naargelang je meer jaren hebt."
+        Kanttekening AI: de drempel gaat over het aantal VERKOPEN binnen één
+        gemeente-jaar, niet over het aantal JAREN. Verschil uitgelegd en
+        gevraagd of Ilse haar waarom wil herformuleren of zo laten.
+        Nog niet in beslissingslog gezet (wacht op Ilse).
+  Waarom rij 29 (herformuleerd door Ilse): "met minder dan 30 verkopen in
+        een jaar kan één uitschieter de gemiddelde prijs vertekenen."
+        -> in beslissingslog gezet.
+  AL3 gesteld.
+  AL3 -> "2025". Log rij 30. Waarom gevraagd.
+  Waarom rij 30: "dat is de meest recente prijs en dus het meest realistisch"
+  AL4 gesteld.
+  AL4 -> "Aparte rangschikkingen". Log rij 31. Waarom gevraagd.
+  Waarom rij 31: "Ik wil het duidelijk en overzichtelijk houden."
+
+Samenvatting pijler 4 (afgerond):
+  Stappenplan ophalen -> controleren -> samenvoegen -> berekenen -> tonen
+  -> besluiten (rij 28); drempel < 30 verkopen = gemarkeerd (rij 29);
+  "duurste" op basis van 2025 (rij 30); aparte rangschikking per vraag
+  (rij 31).
+Alle 4 pijlers afgerond.
+Volgende stap (na akkoord): STAP 6 - mission statement opstellen in een
+nieuw bestand mission_statement.md.
+Status: wacht op akkoord.
+Ilse: "ja, ga verder met de mission statement"
+
+--------------------------------------------------------------------------
+[2026-11-02] STAP 6 - MISSION STATEMENT
+--------------------------------------------------------------------------
+Uitleg: een mission statement legt vast WAT je onderzoekt en WAAROM,
+met vragen die zo scherp zijn dat je weet welke data en welke berekening
+elke vraag beantwoorden. Wat er niet in staat, onderzoek je (nu) niet.
+Wat ik nu doe:
+  - mission_statement.md aangemaakt (versie 1, concept) met: doel,
+    hoofdvraag, 4 analysevragen (V1-V4) + info-vraag Belgen, afbakening,
+    data, werkwijze, beperkingen. Elke keuze verwijst naar een logrij.
+  - Formuleringen zijn een voorstel van de AI -> Ilse leest na en past aan.
+Hoofdvraag (voorstel): "Hoe verhouden de zes kustgemeentes van de Costa
+  Blanca Zuid zich tot elkaar qua prijs per m², aantal verkopen en
+  prijsevolutie van bestaande appartementen tussen 2019 en 2025?"
+Aanname AI: Elche en Orihuela heten in de mission statement gewoon
+  "Elche" en "Orihuela" (hele gemeente, rij 24).
+Status: wacht op feedback van Ilse op versie 1.
+Ilse: "prima zo. We doen morgen verder"
+  -> Mission statement versie 1 aanvaard. Log rij 32 (waarom nog te vragen).
+
+==========================================================================
+EINDE SESSIE 2026-11-02 - STAND VAN ZAKEN
+==========================================================================
+Afgerond: 4 pijlers (decompositie, patroonherkenning, abstractie,
+  algoritme) + mission statement versie 1.
+Bestanden: Brainstorming.txt, proces.txt, beslissingslog.md (32 rijen),
+  mission_statement.md.
+Open voor de volgende sessie:
+  1. Waarom bij rij 32 (mission statement) vragen.
+  2. Stap 2b: bronnen echt openen en de controlelijst afwerken
+     (Notariaat: 2019? appartement? nieuwbouw/bestaand? kwartalen? zones?
+     downloadbaar? / Ministerie: welke gemeentes? / INE Padrón: Belgen
+     per gemeente?). Valt iets tegen -> mission statement aanpassen.
+  3. Nagaan welke stap van de 7 stappen uit de project-PDF hierna komt.
+Werkwijze blijft: manueel, stap per stap, akkoord vóór elke stap, alles
+in proces.txt, elke beslissing in beslissingslog.md.
+
+Volgende stap (na akkoord): STAP 2 - per deelvraag nagaan welke data er bestaat
+(bron, niveau gemeente?, periode, gratis of betalend, betrouwbaarheid).
+
+==========================================================================
+[2026-11-04] START NIEUWE SESSIE
+==========================================================================
+Ilse: "waar waren we gebleven?"
+Wat ik nu doe: proces.txt en beslissingslog.md nagelezen en de stand van
+zaken samengevat. Open punten uit sessie 2026-11-02:
+  1. Waarom bij rij 32 (mission statement v1) - in te vullen door Ilse.
+  2. Stap 2b: bronnen openen en controlelijst afwerken.
+  3. Nagaan welke van de 7 stappen uit de project-PDF hierna komt.
+Opmerking AI: onderaan de vorige sessie staat nog een oude regel
+  "Volgende stap (na akkoord): STAP 2 - per deelvraag nagaan welke data er
+  bestaat" die na het eindblok terechtkwam; vermoedelijk een restant.
+Status: wacht op het waarom bij rij 32.
+  Waarom rij 32: "omdat we mooi tot een hoofdvraag gekomen zijn door de 4
+        stappen te doorlopen" -> in beslissingslog gezet.
+Open punt 1 afgerond.
+Volgende stap (na akkoord): STAP 2b - bronnen openen en controlelijst
+  afwerken (Notariaat, Ministerie, INE Padrón).
+Status: wacht op akkoord.
+Ilse plakte (vermoedelijk per ongeluk) een PowerShell-regel die een .venv
+  activeert ("c:\Ilse programmatie\Python\.venv"). NIET uitgevoerd.
+  Opgemerkt: de cursus-environment is conda syntra-ds, en die is actief.
+Ilse: "wacht nog even met die vraag. In de opdracht staat bij dit punt ook:
+  Teken het dashboard: welke deelvragen, welke categorieën, welke kolommen
+  en filters. Wat doe ik hier mee?"
+Wat ik nu doe: in de cursusinfo (timtim:cursus, les 3 en les 6) opgezocht
+  wat ermee bedoeld wordt. Het hoort bij STAP 1 van de 7 stappen
+  ("ontwerp eerst"): de 4 pijlers toepassen EN het dashboard tekenen.
+  Klaar als: een ander duo het kan uitleggen zonder iets te vragen.
+  Uitgelegd welke delen Ilse al heeft (uit het beslissingslog) en wat nog
+  ontbreekt (lay-out per element + filters op het dashboard).
+  Vraag over stap 2b (werkwijze a/b/c) staat in de wacht.
+Status: wacht op Ilse.
+Ilse: "ik wil eerst het dashboard doen, maar ik denk dat ik dit niet echt
+  moet tekenen maar omschrijven wat ik wil zien. Dit moet eigenlijk in
+  brainstorming komen, denk ik"
+  -> Log rij 33 (eerst dashboard; omschrijven; in Brainstorming.txt).
+     Waarom gevraagd.
+Wat ik nu doe: Brainstorming.txt nagelezen (Ilse's oorspronkelijke
+  wensenlijst). Het dashboard-deel komt er onderaan bij, als nieuw blok;
+  de bestaande tekst blijft ongewijzigd.
+Kanttekening AI: de opdracht zegt letterlijk "teken"; een omschrijving
+  volstaat als een ander duo ze kan uitleggen zonder te vragen. Optie:
+  achteraf een eenvoudige tekst-schets van de lay-out toevoegen.
+Geplande vragen (één voor één, na het waarom):
+  D1 Welke elementen wil je zien (tabel, grafieken, kerncijfers)?
+  D2 In welke volgorde / waar op het scherm?
+  D3 Per element: wat bij gemarkeerde (< 30) of ontbrekende waarden?
+  D4 Welke filters/knoppen voor de gebruiker?
+Status: wacht op waarom rij 33.
+Ilse: "misschien kunnen we het ook tekenen"
+  -> Rij 33 nog niet aangepast; eerst vragen HOE tekenen en WANNEER.
+Voorstel AI: eerst omschrijven (D1-D4), dan tekenen op basis daarvan.
+  Opties tekenen: a) tekstschets in Brainstorming.txt, b) visuele mockup
+  (webpagina), c) zelf op papier / Excalidraw + foto in de projectmap.
+Status: wacht op keuze Ilse.
+Ilse: "ja, eerst beschrijven en dan tekenen met c."
+  -> Rij 33 aangepast: omschrijven in Brainstorming.txt, daarna zelf
+     tekenen (papier/Excalidraw) + afbeelding in projectmap. Waarom gevraagd.
+Status: wacht op waarom rij 33, daarna D1.
+  Waarom rij 33: "omdat ik dan eerst weet wat erin moet komen"
+        -> in beslissingslog gezet.
+D1 gesteld: voorstel van elementen E1-E7, opgebouwd uit rij 13, 19, 22,
+  23, 27, 28 (stap 5 tonen). Nieuw t.o.v. eerdere beslissingen (aanname
+  AI, expliciet gemeld): E6 kerncijfers bovenaan, E7 tekstblok
+  conclusies + beperkingen.
+Opgemerkt: opdracht stap 3 vraagt later ook een rijen-trechter en de
+  pijplijnstappen in de app; dat is bouwwerk, nu niet ontwerpen.
+Status: wacht op antwoord D1.
+Ilse (D1): "ik had misschien ook een kaartje van de kustlijn gehad met de
+  gemeentes en hun cijfers"
+  -> Nieuw element E8 kaart. Nog niet in log: eerst details vragen.
+Vervolgvragen AI: K1 punten of ingekleurde gemeentes? K2 welke cijfers op
+  de kaart? Aandachtspunt: Elche en Orihuela lopen ver landinwaarts (rij 24);
+  kaart toont gemeente-cijfers, niet kustcijfers. Extra data nodig:
+  coördinaten (punten) of grenzen (vlakken) van de 6 gemeentes.
+  Antwoord op E1-E7 (behouden/schrappen) nog open.
+Status: wacht op Ilse.
+Ilse: "alles behalve e1"
+  Interpretatie AI (te bevestigen): E2-E7 behouden, E1 (rangschikkings-
+  tabel) schrappen. Botst met rij 31 (rangschikkingen naast elkaar in één
+  tabel) en rij 28 stap 5. Gevraagd: klopt de interpretatie, en waar
+  komen de rangschikkingen dan (Q2 "duurste")? K1/K2 (kaart) nog open.
+  Nog niets in beslissingslog gezet.
+Status: wacht op bevestiging Ilse.
+Ilse: "je hebt het goed begrepen. k1 keuze a, k2 keuze b"
+  -> Log rij 34 (elementen E2-E8, E1 geschrapt), rij 35 (K1 punten),
+     rij 36 (K2 prijs/m² + tooltip). Waaroms nog te vragen.
+  Nog open: waar komen de rangschikkingen (Q2) nu E1 weg is? Opties
+     a) in tooltip kaart / kerncijfers, b) kleine rangentabel,
+     c) aflezen uit gesorteerde grafieken. Rij 31 pas aanpassen na keuze.
+Status: wacht op keuze rangschikking + waaroms 34-36.
+  Waarom rij 34: "ik vind een rangschikkingstabel niet echt geschikt voor
+        dit onderwerp"
+  Waarom rij 35: "ik kies punten omdat de kleuren een vertekend beeld
+        zouden kunnen geven (ivm de gedeeltelijke kustgemeentes)?"
+        (vraagteken weggelaten in het log; AI bevestigt de redenering)
+  Waarom rij 36: "ik vind het heel overzichtelijk als er niet te veel data
+        op de kaart zelf staat"
+  -> alle drie in beslissingslog gezet.
+  Optioneel gevraagd: waarom kaart (rij 34) + waarom tabel ongeschikt
+        (voorbereiding no-AI gesprek).
+  Nog open: keuze rangschikking (a/b/c), daarna rij 31 aanpassen.
+Status: wacht op Ilse.
+Ilse (aanvulling waarom rij 34): "ik bedoel met niet echt geschikt, omdat
+  het me niet echt te doen is om wie eerst, tweede of derde is."
+  -> toegevoegd aan waarom rij 34.
+Opmerking AI: dit raakt ook rij 30 (basisjaar "duurste"), rij 31
+  (aparte rangschikkingen) en de formulering in mission_statement.md.
+  Optie c (grafieken sorteren, geen rangnummers) sluit beter aan.
+Status: wacht op keuze rangschikking.
+Ilse: "ja, optie c en akkoord met je voorstel"
+  -> Log rij 37 (herziening rij 31: geen rangnummers, grafieken sorteren).
+     Rij 31 gemarkeerd "herzien in rij 37".
+     Open beslissing toegevoegd: mission statement v2 aanpassen
+     (rangschikken -> vergelijken/sorteren). Waarom rij 37 gevraagd.
+Volgende: D2 volgorde van de elementen.
+Status: wacht op waarom rij 37.
+  Waarom rij 37: "zie rij 34." -> in beslissingslog gezet (met verwijzing).
+D2 gesteld: voorstel volgorde (overzicht -> prijs -> verkopen -> corona ->
+  besluit). Aanname AI, expliciet gemeld: titel + hoofdvraag bovenaan
+  (geen eigen element in rij 34). Alternatief: conclusies bovenaan.
+Status: wacht op antwoord D2.
+Ilse (D2): "E5 uitklapblok. De conclusie meteen onder de titel."
+  -> Log rij 38. Aanname AI: titel + hoofdvraag blijft (Ilse verwijst
+     naar "de titel"); beperkingen blijven bij de conclusies (E7 = één
+     blok). Waarom gevraagd.
+Volgende: D3 gemarkeerde (< 30) en ontbrekende waarden per element.
+Status: wacht op waarom rij 38.
+  Waarom rij 38: "de lezer ziet dan direct wat de beperkingen zijn en
+        waarom sommige cijfers misschien anders waren dat hij/zij zou
+        denken." -> in beslissingslog gezet; waarom E5-uitklapblok nog open.
+D3 gesteld: voorstel gemarkeerd (< 30) = tonen met markering per element;
+  ontbrekend = niet opvullen (rij 28 stap 2a), zichtbaar als "geen data".
+  Kan na stap 2b herzien worden.
+Status: wacht op waarom E5 + antwoord D3.
+Ilse: "een uitklapblok houdt alles overzichtelijk. Akkoord. Geen
+  alternatief dichtsbijzijnde jaar."
+  -> Waarom E5 aangevuld in rij 38.
+  -> Log rij 39 (D3a gemarkeerd: tonen met markering) en rij 40 (D3b
+     ontbrekend: niet opvullen, zichtbaar; dichtstbijzijnde jaar
+     verworpen). Waaroms gevraagd.
+Volgende: D4 filters/knoppen voor de gebruiker.
+Status: wacht op waaroms 39-40.
+  Waarom rij 40: "ik vind een dichtsbijzijnd jaar niet zo correct"
+        -> in beslissingslog gezet.
+Status: wacht op waarom rij 39 + antwoord D4.
+Ilse: "leg me nog eens uit waar rij 39 over gaat"
+  -> Uitleg gegeven met voorbeeld (gemeente-jaar met 18 verkopen).
+Status: wacht op waarom rij 39 + antwoord D4.
+  Waarom rij 39: "Ik wel zoveel mogelijk toch alle data geven. Ook als het
+        minder betrouwbaar is. Zolang we dit weten, is dit ok"
+        -> in beslissingslog gezet (licht herschreven tot volzin).
+Status: wacht op antwoord D4.
+Ilse: "ik zie niet waar de andere claude session openstaat. kan jij deze
+  voor mij afsluiten"
+  -> Gecontroleerd (ListAgents): geen andere Claude-sessie actief op deze
+     computer. Uitgelegd waar een sessie nog zichtbaar kan zijn en hoe je
+     ze zelf afsluit (/exit of Ctrl+C in de terminal). Niets afgesloten.
+Status: wacht op antwoord D4.
+Ilse: melding boven de invoerlijn: "auto-update failed: claude.exe in use"
+  -> Gecontroleerd: één claude.exe actief (deze sessie, gestart 18:15).
+     Uitgelegd: update kan het programma niet vervangen terwijl het
+     draait; onschuldig. Oplossing na de sessie: /exit, dan nieuwe
+     terminal + claude update. Niets afgesloten.
+Status: wacht op antwoord D4.
+Ilse (D4): "akkoord met de filters."
+  -> Log rij 41. Waarom gevraagd.
+Dashboardontwerp D1-D4 inhoudelijk volledig (rij 33-41).
+Volgende stap (na akkoord): het volledige dashboardontwerp in woorden
+  onderaan Brainstorming.txt schrijven; bestaande tekst blijft ongewijzigd.
+Status: wacht op waarom rij 41 + akkoord om te schrijven.
+Ilse: "had ik iets gezegd over waarom ik geen periode schuifbalk wilde?"
+  -> Eerlijk geantwoord: nee. "Geen schuifbalk" was een voorstel van de AI
+     met de AI-redenering erbij; Ilse ging akkoord zonder eigen waarom.
+     Gevraagd of ze de redenering deelt of de keuze wil herbekijken.
+Status: wacht op Ilse.
+Ilse: "leg me uit waarom de betekenis verandert als je de periode inkort"
+  -> Uitleg met verzonnen voorbeeldcijfers (2 gemeentes, 2019/2021/2025):
+     % stijging hangt af van het startjaar; volgorde kan omdraaien;
+     conclusies bovenaan kloppen dan niet meer. Verschil uitgelegd tussen
+     inzoomen op een lijngrafiek (cijfers blijven) en % stijging (cijfer
+     verandert).
+Status: wacht op keuze/waarom rij 41.
+Ilse: "a, omdat de conclusies anders niet meer kloppen"
+  -> Waarom rij 41 ingevuld; tussenweg (schuifbalk enkel E2/E4) als
+     overwogen alternatief toegevoegd.
+Status: wacht op akkoord om het dashboardontwerp in Brainstorming.txt
+  te schrijven.
+Ilse: "ja, schrijf het maar in Brainstorming.txt"
+Wat ik deed: dashboardontwerp (rij 33-41) als nieuw blok onderaan
+  Brainstorming.txt toegevoegd; bestaande tekst ongewijzigd. Geschreven
+  in ASCII met Windows-regeleinden (zoals het bestaande bestand), dus
+  "m2" i.p.v. "m²". Blok "Nog te controleren in stap 2b" toegevoegd
+  (aanname AI: open punten die het ontwerp kunnen wijzigen).
+Volgende stappen (na akkoord): Ilse tekent het dashboard zelf
+  (papier/Excalidraw) + afbeelding in projectmap; daarna stap 2b
+  (werkwijze a/b/c nog te kiezen).
+Status: wacht op feedback van Ilse op het dashboardontwerp.
+Ilse: "Ik wil nu de data ontdekken. welke data is er allemaal. Welke is
+  echt betrouwbaar. Hoe kom je tot het dashboard dat we eerder besproken
+  hebben. Deze informatie gaan we bijhouden in data-exploratie.md"
+--------------------------------------------------------------------------
+[2026-11-04] STAP 2b - DATA-EXPLORATIE
+--------------------------------------------------------------------------
+Wat ik deed: data-exploratie.md aangemaakt met: 1 welke data nodig
+  (vanuit dashboard), 2 kandidaat-bronnen B1-B7 (status: nog niets
+  gecontroleerd), 3 controlelijst per bron, 4 betrouwbaarheid,
+  5 van bron naar dashboard, 6 gevolgen voor ontwerp.
+Aanname AI (gemeld): bronnen B3, B5, B6, B7 zijn nieuw t.o.v. de mission
+  statement; komen uit kennis van de AI, nog niet geopend.
+Log rij 42. Waarom gevraagd. Werkwijze a/b/c opnieuw gevraagd.
+Status: wacht op waarom rij 42 + keuze werkwijze.
+  Waarom rij 42: "dat werkt voor mij overzichtelijk en laat me toe echt in
+        stappen te werken." -> in beslissingslog gezet.
+Status: wacht op keuze werkwijze a/b/c.
+Ilse: "c"
+  -> Log rij 43 (werkwijze c). Waarom gevraagd.
+Voorstel volgorde bronnen: B1 Notariaat -> B4 INE Padron -> B2/B3
+  Ministerie -> B5 INE IPV/ETDP -> B7 coordinaten -> B6 vraagprijzen.
+Status: wacht op waarom rij 43 + akkoord om met B1 te starten.
+Ilse: "Ik wil dit samen doen. Ik wil weten wat jij belangrijk vindt en ik
+  wil de controle wat houden."
+  -> Genoteerd als waarom rij 43.
+  -> Werkwijze verfijnd: per bron toont de AI wat ze vond + wat ze
+     belangrijk vindt en waarom; Ilse beslist per bevinding wat in
+     data-exploratie.md komt. Geen grote blokken zonder overleg.
+Status: wacht op akkoord volgorde + start B1.
+Ilse: "lijkt me goed. We gaan dat wel voor morgen houden."
+  -> Log rij 44 (volgorde bronnen). Waarom volgende sessie.
+
+==========================================================================
+EINDE SESSIE 2026-11-04 - STAND VAN ZAKEN
+==========================================================================
+Afgerond vandaag:
+  - Waarom rij 32 (mission statement v1).
+  - Dashboardontwerp D1-D4 (rij 33-41), met alle waaroms; rij 31
+    herzien in rij 37 (geen rangnummers, grafieken sorteren).
+  - Dashboardontwerp in woorden onderaan Brainstorming.txt.
+  - Start stap 2b: data-exploratie.md aangemaakt (rij 42), werkwijze c
+    (rij 43), volgorde bronnen (rij 44).
+Bestanden: Brainstorming.txt, proces.txt, beslissingslog.md (44 rijen),
+  mission_statement.md (v1), data-exploratie.md.
+Open voor de volgende sessie:
+  1. Waarom bij rij 44 (volgorde bronnen) vragen.
+  2. Stap 2b starten met B1 Notariaat: AI zoekt in kleine stukken, toont
+     wat ze vond + wat ze belangrijk vindt; Ilse beslist wat in
+     data-exploratie.md komt; daarna kliklijst voor Ilse.
+  3. Ilse tekent het dashboard (papier/Excalidraw) + afbeelding in
+     projectmap (kan los van de sessies).
+  4. Na stap 2b: mission statement v2 (o.a. "rangschikken" ->
+     "vergelijken/sorteren").
+  5. Claude Code bijwerken: /exit, nieuwe terminal, conda activate
+     syntra-ds, claude update.
+Werkwijze blijft: stap per stap, akkoord vóór elke stap, alles in
+  proces.txt, elke beslissing in beslissingslog.md.
+
+==========================================================================
+[2026-11-05] NIEUWE SESSIE
+==========================================================================
+Ilse: "waar waren we gebleven?"
+Wat ik deed: einde proces.txt en beslissingslog.md gelezen; stand van
+  zaken samengevat; waarom rij 44 gevraagd.
+Status: wacht op waarom rij 44 + akkoord om met B1 Notariaat te starten.
+Ilse: "Ik denk dat dat van het notariaat en het ministerie wel correct en
+  uitgebreid zal zijn"
+  -> Genoteerd als waarom rij 44 in beslissingslog.md.
+  -> AI merkt op: dit is een verwachting; stap 2b controleert ze.
+Status: wacht op akkoord om met B1 Notariaat te starten.
+Ilse: "we starten met notariaat. Voorlopig downloaden we nog niets"
+--------------------------------------------------------------------------
+[2026-11-05] STAP 2b - B1 NOTARIAAT
+--------------------------------------------------------------------------
+Wat ik nu doe: online opzoeken (enkel webpagina lezen, niets downloaden)
+  waar de data van het Notariaat staat, welke filters er zijn
+  (gemeente, woningtype, nieuw/bestaand, periode) en welke cijfers.
+Wat ik deed: gezocht naar penotariado.com. Site zelf gaf 2x HTTP 502
+  (storing bij hen) -> niet zelf kunnen bekijken. Wel gelezen:
+  persbericht Notariaat 23/10/2025 (pdf; door de tool automatisch
+  tijdelijk bewaard in de interne Claude-map, NIET in de projectmap)
+  + krantenartikels (Xataka, Vozpopuli).
+Bevindingen B1 (nog niet zelf gezien in het portaal):
+  - echte verkoopprijzen uit notariele akten, gratis, maandelijks bijgewerkt
+  - cijfers: prijs/m2, gemiddelde oppervlakte, gemiddelde totaalprijs,
+    aantal verkopen
+  - filters: tipo de finca (o.a. plurifamiliar = appartement),
+    construccion (nieuw / tweedehands), postcode
+  - kaart toont de LAATSTE 12 MAANDEN; persbericht zegt ook
+    "estadisticas completas de los ultimos 12 anos" -> onduidelijk of
+    je per gemeente per jaar 2019-2025 kunt opvragen
+  - niets gevonden over downloaden of minimum aantal verkopen
+Status: bevindingen voorgelegd; wacht op keuze Ilse wat in
+  data-exploratie.md komt.
+Ilse: "ik vind je voorstel ok"
+Wat ik deed: bevindingen B1 (punten 1-4 + gevolg voor B2/B3) onder
+  "Controlelijst B1" in data-exploratie.md gezet, met vermelding "nog
+  niet zelf gecontroleerd in het portaal". Vakjes en status B1 blijven
+  leeg/nog niet gecontroleerd. Log rij 45 (incl. "voorlopig niets
+  downloaden"). Waarom gevraagd.
+Status: wacht op waarom rij 45 + akkoord voor kliklijst penotariado.com.
+Ilse: "ik dacht nog even niets te downloaden omdat ik niet wist hoe groot
+  de databronnen zijn. Als dit beter werkt, kan je ze downloaden. Waar
+  ging rij 45 over? De kliklijst mag al gemaakt worden"
+  -> Waarom (deel downloaden) in rij 45 gezet.
+  -> Rij 45 uitgelegd; waarom voor deel "bevindingen opnemen" nog open.
+Wat ik deed: penotariado.com opnieuw geprobeerd: weer HTTP 502 (mogelijk
+  blokkeert de site automatische bezoekers). Kliklijst B1 opgesteld in
+  het antwoord (nog NIET in data-exploratie.md).
+Status: wacht op waarom rij 45 (deel 1), akkoord kliklijst in
+  data-exploratie.md, en akkoord voorstel downloaden (grootte vooraf).
+Ilse: "stel me vragen over rij 45"
+  -> 3 open hulpvragen gesteld om het waarom (deel 1) te formuleren;
+     geen antwoorden voorgesteld (waarom = woorden van Ilse).
+Status: wacht op antwoorden Ilse.
+Ilse (waarom rij 45, deel 1): "ik heb het laten noteren om hier misschien
+  later op terug te komen. Dan weet ik dat het nog niet werd
+  gecontroleerd. Ik weet niet of het uiteindelijk nuttig zal zijn."
+  -> Genoteerd in rij 45. Rij 45 volledig.
+Status: wacht op akkoord kliklijst in data-exploratie.md + akkoord
+  voorstel downloaden (eerst bron en grootte melden).
+Ilse: "help me bij die vraag. Controleer ik het beter nu?"
+  -> Advies AI: nu controleren (periode bepaalt of B1 hoofdbron blijft en
+     wat de volgende stap is; enkel Ilse kan de site openen). Kliklijst
+     samenvoegen met bestaande controlelijst B1 i.p.v. apart blok.
+Status: wacht op keuze Ilse.
+Ilse: "a, voeg de kliklijst samen"
+Wat ik deed: controlelijst B1 in data-exploratie.md vervangen door een
+  samengevoegde kliklijst (A periode, B filters, C cijfers, D gebruik,
+  later). Alle 8 oude vragen zitten erin; "< 30 verkopen" naar "later".
+  Log rij 46. Waarom gevraagd.
+Volgende stap: Ilse controleert penotariado.com (eerst groep A),
+  screenshots in de chat; daarna samen noteren.
+Status: wacht op waarom rij 46 + resultaten van de controle.
+Ilse: "ik kan de link niet openen. Hij is blocked"
+Wat ik deed: gezocht naar een ander adres. Geen gevonden: officieel adres
+  blijft www.penotariado.com. Nieuw (El Debate, aug 2026): zoeken kan op
+  Espana, comunidad, provincia, municipio en codigo postal, of een zone
+  tot 5 km2 tekenen -> gemeenteniveau bestaat (nog niet zelf gezien).
+Gevraagd: exacte melding/screenshot om de oorzaak te kennen.
+Status: wacht op melding van Ilse.
+Ilse: melding = "web page blocked. The page can not be displayed. Please
+  contact the administrator for additional information."
+  -> Uitleg AI: typische melding van een webfilter/firewall op het
+     netwerk (vaak Fortinet/FortiGuard), niet van de site zelf. Advies:
+     ander netwerk (gsm via 4G/5G, thuisnetwerk) of de beheerder vragen.
+     Filter niet omzeilen op een netwerk van school/werk.
+Status: wacht op keuze Ilse (ander netwerk proberen / later / verder
+  met B4).
+Ilse: "ik werk thuis op mijn prive laptop"
+Wat ik deed: alleen-lezen controle op de laptop: geen FortiClient of
+  andere filtersoftware; enkel Windows Defender (+ restje Avast Update
+  Helper); DNS = 195.130.130.4 / 195.130.131.4 (Telenet).
+  -> Eerdere uitleg bijgesteld: filter zit niet op de laptop. Twee
+     mogelijkheden: (1) Telenet/router-beveiliging, (2) de site zelf
+     blokkeert bezoekers (bv. van buiten Spanje) met een firewall.
+  -> Test voorgesteld: gsm via mobiele data (wifi uit).
+Status: wacht op resultaat test gsm.
+Ilse: "ook op mijn gsm lukt het niet"
+  -> Conclusie AI: blokkering zit bij de site zelf (niet laptop, niet
+     Telenet). Niet zeker of het om Belgie/buitenland gaat of om een
+     algemene storing (AI kreeg 502).
+  -> Opties voorgelegd: (a) B1 als "geblokkeerd" noteren, later opnieuw
+     proberen, nu verder met B2/B3 Ministerio, hoofdbron pas daarna
+     beslissen; (b) nu al Ministerie als hoofdbron; (c) Tim of het
+     Notariaat contacteren. VPN met Spaans IP niet aangeraden.
+Status: wacht op keuze Ilse.
+Ilse: "denk je dat we interessante informatie kunnen halen van de site
+  https://www.spanishpropertyinsight.com/datahub/"
+Wat ik deed: hoofdpagina + 3 deelpaginas gelezen (niets gedownload).
+Bevindingen (nog niet zelf gecontroleerd door Ilse):
+  - SPI is een TWEEDEHANDSE bron: herverpakt cijfers van Ministerie
+    (MITMA), Notariaat, Registradores, INE.
+  - /prices/big-municipalities/: Ministerie, taxatiewaarde EUR/m2,
+    gemeentes > 25.000 inw., per kwartaal 2005-Q1 tot 2024-Q3.
+    Gezien: Elche (1.226 EUR/m2 2024-Q3), Orihuela, Santa Pola,
+    Torrevieja. Guardamar en Pilar niet gezien. Woningtype niet vermeld.
+  - /sales/municipality-selection/: Ministerie, aantal verkopen per
+    kwartaal 2004-Q1 tot 2024-Q3, zonder sociale woningen; onze
+    gemeentes niet zichtbaar in het gelezen deel.
+  - /foreign/belgium/: Belgische kopers - Notariaat (nationaal,
+    halfjaar 2007-2025) en Registradores (per regio, 2021-2024).
+    Geen gemeente of provincie.
+  - Geen downloadknop gezien; lijkt gratis te bekijken.
+Status: wacht op keuze Ilse (SPI noteren als B8? + keuze a/b/c voor B1).
+Ilse: "nee, dit is geen interessante site. Het is geen originele bron en
+  haalt de data op andere plaatsen. Verder hebben we niet veel jaren en
+  we weten niet goed waar de cijfers vandaan komen. Taxatiewaarden zijn
+  niet belangrijk. De vraag ivm de belgen is misschien eentje die ik
+  later laat vallen."
+  -> Log rij 47 (SPI verworpen, waarom = woorden Ilse).
+  -> Open beslissingen aangevuld: Belgen misschien later laten vallen;
+     rol taxatiewaarden (B2) verduidelijken.
+Status: wacht op antwoord: taxatiewaarden helemaal schrappen? + keuze
+  a/b/c voor B1.
+Ilse: "taxatiewaarden kunnen als controle dienen. notariaat: keuze a"
+Wat ik deed: log rij 48 (taxatie = controle, bevestigt rij 25) en rij 49
+  (B1 keuze a); open beslissing over taxatie geschrapt (beslist).
+  data-exploratie.md: status B1 -> "site geblokkeerd (05/11)" + blok
+  met uitleg boven de kliklijst.
+Volgende stap: B2/B3 Ministerio, eerste vraag: hebben Guardamar en
+  Pilar de la Horadada cijfers (drempel 25.000 inwoners?).
+Status: wacht op waarom rij 48 en 49 + akkoord om B2/B3 te starten.
+Ilse: "controlecijfers zijn steeds interessant. Ik weet niet wat er in het
+  notariaat beschikbaar is, maar ik neem aan dat deze info uitermate
+  betrouwbaar is. Maar je mag starten met ministerie waar ik even zeer
+  aan neem dat de informatie heel betrouwbaar is."
+  -> Waarom rij 48 en 49 ingevuld.
+--------------------------------------------------------------------------
+[2026-11-05] STAP 2b - B2/B3 MINISTERIO DE VIVIENDA
+--------------------------------------------------------------------------
+Wat ik nu doe: online opzoeken (enkel lezen, niets downloaden) welke
+  cijfers per gemeente het Ministerie publiceert (taxatiewaarde en
+  aantal verkopen), vanaf welke inwonersdrempel, en of Guardamar en
+  Pilar de la Horadada erin zitten.
+Wat ik deed: gezocht (enkel lezen). mivau.gob.es gaf HTTP 403 (blokkeert
+  de AI). Wel gelezen: tabellenlijst op apps.fomento.gob.es (BoletinOnline2,
+  Transacciones inmobiliarias), datos.gob.es (valor tasado), en een
+  bronnenpagina van het statistisch jaarboek van Murcia 2022 (pdf, door
+  de tool automatisch tijdelijk bewaard in de interne Claude-map).
+Bevindingen B2/B3 (nog niet zelf gecontroleerd door Ilse):
+  - B3 Transacciones: gemaakt uit de notariele aktes, beheerd door het
+    Consejo General del Notariado (bevestigd in jaarboek Murcia).
+  - Per gemeente (XLS): 2 totaal, 2.1 vrije woningen, 2.2 sociale,
+    2.3 nieuw, 2.4 tweedehands. Enkel AANTALLEN. Inwonersdrempel,
+    periode en tijdseenheid niet vermeld.
+  - Splitsing appartement/huis (tipologia) en gemiddelde waarde: enkel
+    per regio/provincie, NIET per gemeente (volgens de tabellenlijst).
+  - B2 Valor tasado: per gemeente > 25.000 inwoners, per kwartaal,
+    taxatiewaarde EUR/m2 (vrije woningen). Ook als CSV op datos.gob.es.
+Status: bevindingen voorgelegd; wacht op keuze Ilse.
+Wat ik deed: enkel de kop opgevraagd (curl -I, geen download):
+  2.4 tweedehands per gemeente (34010250.XLS) = 6,5 MB, bijgewerkt
+  01/10/2026; 2.1 vrije woningen per gemeente (34010220.XLS) = 6,4 MB.
+Status: wacht op akkoord Ilse om 2.4 te downloaden (6,5 MB) en te
+  bekijken.
+Ilse: "ja, download het en bekijk eerst het bestand"
+Wat ik deed: map data/ruw/ aangemaakt; tabel 2.4 gedownload als
+  data/ruw/ministerio_2.4_tweedehands_per_gemeente_34010250.xls
+  (bron https://apps.fomento.gob.es/BoletinOnline2/sedal/34010250.XLS,
+  gedownload 2026-11-05). Ruw bestand = nooit aanpassen.
+Wat ik deed: bestand bekeken met pandas (alleen lezen; leesscripts in de
+  scratchpad, niet in het project). Resultaten:
+  - 1 tabblad "Segunda Mano", titel "Transacciones inmobiliarias de
+    vivienda de segunda mano por municipios."
+  - aantal verkopen per KWARTAAL, 2004-Q1 t/m 2026-Q2 (90 kwartalen);
+    enkel 2026-Q2 voorlopig (*). 2019-2025 = definitief.
+  - +/- 8.100 rijen = alle gemeentes van Spanje (geen inwonersdrempel).
+  - alle 6 gemeentes aanwezig, 90/90 kwartalen ingevuld, geen tekst-
+    waarden. Kleinste kwartaal 2019-2025 bij onze 6: 55 verkopen.
+  - jaartotalen 2019-2025 berekend (som 4 kwartalen); laagste jaar =
+    Pilar 2020 (493), hoogste = Torrevieja 2022 (7.237).
+  - beperking: alle tweedehandswoningen (appartement + huis), en vrij +
+    sociaal samen (tabel 2.4 = alle tweedehands).
+Status: wacht op beslissing Ilse wat in data-exploratie.md komt.
+Ilse: "ik ga akkoord. Je mag al noteren dat we alle tweedehandswoningen
+  aanvaarden"
+Wat ik deed: data-exploratie.md: status B3 -> bruikbaar met beperking;
+  controlelijst B2/B3 aangevinkt; blok "Bevindingen B3" met bron, tabel
+  jaartotalen en punten 1-5; sectie 5 rij aantal_verkopen ingevuld;
+  sectie 6: tweedehandswoningen + open vraag prijsbron.
+  Log rij 50 (opnemen B3) en rij 51 (herziening rij 26: alle
+  tweedehandswoningen). Waarom gevraagd.
+Status: wacht op waarom rij 50/51 (+ open waarom rij 46).
+Ilse: "rij 50: er is nog geen prijs per m3 / rij 51: indien het werkelijk
+  mogelijk zou zijn, geef ik de voorkeur aan alleen appartementen. Maar
+  indien het niet anders kan, aanvaard ik de beiden. / rij 46: waarom
+  raadde je mij dit al weer aan?"
+  -> Waarom rij 50 (m3 -> m2 verbeterd) en rij 51 ingevuld.
+  -> Uitleg gegeven waarom de AI rij 46 aanraadde.
+Status: wacht op waarom rij 46 + keuze volgende bron (B4 of prijsbron).
+Ilse: "rij 46: er was al een controlelijst. Dit kan alles onoverzichtelijk
+  maken. Je dient meermaals hetzelfde aan te vinken. Ik ben wel benieuwd
+  naar de een bron voor de prijs per m3"
+  -> Waarom rij 46 ingevuld. Log rij 52 (eerst prijsbron, wijkt af van
+     rij 44; waarom = woorden Ilse, m3 -> m2).
+--------------------------------------------------------------------------
+[2026-11-05] STAP 2b - ZOEKTOCHT PRIJS PER M2 PER GEMEENTE
+--------------------------------------------------------------------------
+Wat ik nu doe: online zoeken (enkel lezen) naar bronnen met echte
+  verkoopprijzen per m2 per gemeente (Registradores, Generalitat
+  Valenciana, andere), liefst met splitsing appartement.
+Wat ik deed: gezocht naar echte verkoopprijs/m2 per gemeente (enkel lezen).
+Bevindingen (niet zelf gecontroleerd door Ilse):
+  - Registradores (ERI): echte prijzen uit het register, maar per
+    regio, provincie (o.a. Alicante) en hoofdsteden; geen gemeentes
+    gevonden. Jaarboek-pdf te groot om te lezen (> 10 MB).
+  - Tinsa (IMIE Mercados Locales): EUR/m2 per gemeente per kwartaal
+    (Elche, Orihuela, Torrevieja gezien in krantenartikels), maar Tinsa
+    is een taxatiebedrijf -> taxatiewaarde.
+  - RealAdvisor / Idealista: per gemeente en postcode, ook appartement
+    apart, maar vraagprijzen (of modelschattingen).
+  - CoHispania-kaart (datos.gob.es): 8.300 gemeentes, 2017-2021, bron
+    van de prijs onduidelijk.
+  - Conclusie: enige gevonden bron met echte verkoopprijs per gemeente =
+    Notariaat-portaal (geblokkeerd).
+Status: opties voorgelegd; wacht op keuze Ilse.
+Ilse: "a, en stel de mail aan het Notariaat op"
+Wat ik deed: zoektocht prijs/m2 (tabel + conclusie) in sectie 6 van
+  data-exploratie.md; log rij 53; mail aan het Notariaat opgesteld in
+  het Spaans (+ Nederlandse vertaling) in het antwoord. AI verstuurt
+  niets; Ilse verstuurt zelf.
+Status: wacht op feedback op de mail + waarom rij 53; daarna B4.
+Ilse: "zet de mail in een tekstbestand in de projectmap"
+Wat ik deed: mail_notariaat.txt aangemaakt in de projectmap (Spaanse
+  mail + Nederlandse vertaling + checklist voor verzending). UTF-8
+  (nodig voor Spaanse tekens). Niets verstuurd.
+Status: wacht op waarom rij 53; daarna B4 INE Padron.
+Ilse: "omdat het Notariaat de enige bron is met echte verkoopprijzen"
+  -> Waarom rij 53 ingevuld. Alle waaroms t/m rij 53 zijn ingevuld.
+Status: wacht op akkoord om B4 INE Padron te starten.
+Ilse: "we starten met B4"
+--------------------------------------------------------------------------
+[2026-11-05] STAP 2b - B4 INE PADRON
+--------------------------------------------------------------------------
+Wat ik nu doe: opzoeken (enkel lezen) welke INE-tabellen inwoners per
+  gemeente per jaar geven (2019-2025), en of er Belgen per gemeente zijn.
+Wat ik deed: INE-API bevraagd (enkel lezen, niets bewaard):
+  operatie 22 "Cifras Oficiales de Poblacion ... Revision del Padron
+  Municipal", tabel 2856 "Alicante/Alacant: Poblacion por municipios y
+  sexo". Alle 6 gemeentes, 2018-2025, totaal + man/vrouw, telkens op
+  1 januari. Laatste jaar = 2025.
+  2025: Elche 245.557, Guardamar 18.564, Orihuela 84.560, Pilar 24.316,
+  Santa Pola 39.709, Torrevieja 98.533.
+  -> Guardamar en Pilar < 25.000: vallen vermoedelijk buiten B2
+     (taxatie per gemeente).
+  Belgen per gemeente: nog geen INE-tabel gevonden (niet in operatie 22;
+  websearch leverde niets op).
+Status: bevindingen voorgelegd; wacht op keuze Ilse.
+Ilse: "neem b4 op. De belgen laten we voorlopig rusten"
+Wat ik deed: data-exploratie.md: status B4 -> bruikbaar; controlelijst B4
+  bijgewerkt; blok "Bevindingen B4" (bron, tabel, punten 1-5); sectie 5
+  rij inwoners; sectie 6: open vraag teldatum + Belgen laten rusten.
+  Log rij 54 (B4 opnemen) en 55 (Belgen laten rusten); open beslissing
+  Belgen aangevuld. Waarom gevraagd.
+Status: wacht op waarom rij 54 en 55.
+Ilse: "rij 54: officiele cijfers, volledig voor alle jaren. Rij 55: Op dit
+  moment is eigenlijk de hoofdvraag: de prijzen per gemeente. Later kan
+  ik dit project uitbreiden. Maar ik wil me nu focussen op deze eerste
+  vraag"
+  -> Waarom rij 54 en 55 ingevuld. Alle waaroms t/m rij 55 ingevuld.
+Status: wacht op keuze: verder (B2/B5/B7/B6) of stoppen voor vandaag.
+Ilse: "verder met B2"
+--------------------------------------------------------------------------
+[2026-11-05] STAP 2b - B2 MINISTERIO VALOR TASADO
+--------------------------------------------------------------------------
+Wat ik nu doe: tabellenlijst "valor tasado" van het Ministerie lezen
+  (enkel lezen) en de tabel per gemeente zoeken.
+Bevindingen: 6 tabellen valor tasado. Enkel tabel 4 per gemeente:
+  "Valor tasado de vivienda libre de los municipios mayores de 25.000
+  habitantes" (35103500.XLS, 4,0 MB, bijgewerkt 17/09/2026). Splitsing
+  naar ouderdom (tot 5 jaar / meer dan 5 jaar) enkel in tabel 1.1/1.2,
+  niet per gemeente.
+Status: wacht op akkoord Ilse om tabel 4 te downloaden (4,0 MB).
+Ilse: "ja, download het en bekijk het bestand"
+Wat ik deed: tabel 4 gedownload als
+  data/ruw/ministerio_tabel4_valor_tasado_gemeentes_25000_35103500.xls
+  (bron https://apps.fomento.gob.es/BoletinOnline2/sedal/35103500.XLS,
+  gedownload 2026-11-05). Ruw bestand = nooit aanpassen.
+Wat ik deed: bestand bekeken (alleen lezen, scripts in scratchpad).
+  - 86 tabbladen, 1 per kwartaal, 2005-Q1 t/m 2026-Q2. Eenheid EUR/m2.
+  - per gemeente: taxatiewaarde tot 5 jaar / meer dan 5 jaar / totaal,
+    + aantal taxaties per groep. "n.r" = te weinig taxaties (vermoedelijk
+    "no representativo"; niet bij onze gemeentes 2019-2025).
+  - enkel 4 van de 6: Elche, Orihuela, Santa Pola, Torrevieja (28/28
+    kwartalen). Guardamar en Pilar ontbreken (< 25.000 inwoners).
+  - FOUT VAN DE AI gevonden en verbeterd: lege kolom tussen prijzen en
+    aantallen -> aantallen eerst 1 kolom verschoven gelezen. Prijzen
+    waren juist. Nu met controle (assert) op de lege kolom.
+  - taxatiewaarde > 5 jaar, Q4: 2019 -> 2025: Elche 953 -> 1.540,
+    Orihuela 1.133 -> 1.851, Santa Pola 1.322 -> 2.318, Torrevieja
+    1.249 -> 2.122. Min. 120 taxaties > 5 jaar per kwartaal.
+Status: bevindingen voorgelegd; wacht op beslissing Ilse.
+Ilse: "ja, neem B2 op. We hebben meer dan 5 jaar. En we hebben 4 van de 6
+  gemeentes. Wel jammer van die 2 andere."
+Wat ik deed: data-exploratie.md: status B2 -> bruikbaar als controle,
+  4 van 6; controlelijst bijgewerkt; blok "Bevindingen B2" (bron, tabel,
+  punten 1-5 incl. verbeterde fout AI); sectie 5 rij taxatiewaarde;
+  sectie 6 open vraag controlecijfer per jaar. Log rij 56 (waarom =
+  woorden Ilse uit dit antwoord).
+Status: wacht op bevestiging waarom rij 56 + volgende stap.
+Ilse: "verder met B6"
+--------------------------------------------------------------------------
+[2026-11-05] STAP 2b - B6 VRAAGPRIJZEN
+--------------------------------------------------------------------------
+Wat ik nu doe: opzoeken (enkel lezen) of Idealista en Fotocasa
+  vraagprijs/m2 per gemeente per maand/jaar tonen voor onze 6 gemeentes,
+  sinds wanneer, en of appartementen apart staan.
+Wat ik deed: Idealista-historiekpagina Guardamar -> HTTP 403 (blokkeert
+  de AI). Fotocasa-adres gaf enkel de startpagina (adres fout of
+  verplaatst). Zoekopdracht gaf enkel RealAdvisor: momentopname juli
+  2026 (Guardamar 2.307 EUR/m2; appartement 2.305), geen reeks 2019-2025;
+  RealAdvisor = schattingsmodel o.b.v. advertenties (vermoeden AI).
+  Uit kennis AI (niet gecontroleerd): Idealista toont per gemeente een
+  maandreeks vraagprijs/m2 sinds +/- 2006, voor alle woningen samen.
+Status: voorstel: Ilse kijkt Idealista zelf na met een korte kliklijst.
+Ilse: "ja. ik kan wel op de site. Ik zie prijzen per m2 en de data start
+  vanaf januari 2006. Geen vivienda of pisos; Ik vind ook andere
+  gemeentes terug"
+Wat ik deed: data-exploratie.md: status B6 -> reserve voor de prijs,
+  door Ilse bekeken; kliklijst Idealista (4 vragen aangevinkt met
+  antwoorden Ilse, 2 open: tijdseenheid, downloaden); bevindingen 1-4.
+  Log rij 57. Waarom gevraagd.
+Status: wacht op waarom rij 57 + 2 open vragen kliklijst.
+Ilse: "prijs per maand. er is geen download. ik zou cijfers moeten
+  overnemen. Misschien is Idealista toch wel een interessante bron om mee
+  op te nemen. Alleen de data is moeilijker toegankelijk niet
+  dowloadbaar"
+  -> Kliklijst B6 aangevuld (per maand; geen download) + punt 5.
+  -> Waarom rij 57 ingevuld (woorden Ilse).
+  -> Gevraagd: bedoelt Ilse Idealista ook als EXTRA op het dashboard
+     (niet enkel reserve)? Opties voor overnemen voorgelegd.
+Status: wacht op antwoord Ilse.
+Ilse: "ja, schrijf de samenvatting in proces.txt"
+
+==========================================================================
+EINDE SESSIE 2026-11-05 - STAND VAN ZAKEN
+==========================================================================
+Afgerond vandaag:
+  - Waarom rij 44 ingevuld. Nieuwe beslissingen: rij 45-57, alle
+    waaroms ingevuld.
+  - B1 Notariaat: bevindingen uit persbericht + kliklijst in
+    data-exploratie.md. Site www.penotariado.com GEBLOKKEERD ("Web Page
+    Blocked") op laptop (Telenet) en gsm (mobiele data) -> blokkering zit
+    bij de site zelf. Mail aan het Notariaat klaar: mail_notariaat.txt.
+  - Spanish Property Insight bekeken en verworpen (rij 47).
+  - B3 Ministerie (tabel 2.4): tweedehandsverkopen per gemeente per
+    kwartaal 2004-2026, alle 6 gemeentes. Komt uit notariele aktes.
+    Herziening rij 26: alle tweedehandswoningen aanvaard (rij 51).
+  - Zoektocht echte prijs/m2 per gemeente: enkel het Notariaat-portaal
+    heeft die (rij 53).
+  - B4 INE tabel 2856: inwoners per gemeente 2019-2025, bruikbaar.
+    Belgen voorlopig laten rusten (rij 55): focus op de hoofdvraag.
+  - B2 Ministerie tabel 4: taxatiewaarde > 5 jaar, per kwartaal, 4 van
+    6 gemeentes (geen Guardamar en Pilar). Fout van de AI (lege kolom)
+    gevonden en verbeterd, vermeld in data-exploratie.md.
+  - B6 Idealista: vraagprijs/m2 per maand vanaf 01/2006, alle
+    gemeentes, geen download; door Ilse zelf gecontroleerd (rij 57).
+Bestanden:
+  - proces.txt, beslissingslog.md (57 rijen), data-exploratie.md,
+    mission_statement.md (v1), Brainstorming.txt
+  - NIEUW: mail_notariaat.txt
+  - NIEUW: data/ruw/ministerio_2.4_tweedehands_per_gemeente_34010250.xls
+  - NIEUW: data/ruw/ministerio_tabel4_valor_tasado_gemeentes_25000_35103500.xls
+  (leesscripts van de AI staan enkel in de tijdelijke scratchpad, niet
+   in het project)
+Stand bronnen: B1 geblokkeerd | B2 controle 4/6 | B3 bruikbaar met
+  beperking | B4 bruikbaar | B6 reserve | B5, B7 nog te doen.
+Open voor de volgende sessie:
+  1. Mail aan het Notariaat versturen (naam invullen), datum noteren;
+     portaal later opnieuw proberen.
+  2. Idealista: enkel reserve (a) of ook extra op het dashboard (b)?
+     Overnemen: enkel december (42) of alle maanden (504)?
+  3. Teldatum inwoners: 1/1 van dat jaar of 1/1 van het jaar erna?
+  4. Controlecijfer B2 per jaar: 4e kwartaal of gemiddelde 4 kwartalen?
+  5. B5 INE prijsindex (vermoedelijk niet per gemeente) en B7
+     coordinaten kort afwerken.
+  6. Daarna: mission statement v2 ("tweedehandswoningen", geen
+     rangschikken, focus hoofdvraag).
+  7. Ilse tekent het dashboard (papier/Excalidraw) - los van de sessies.
+  8. Claude Code bijwerken: /exit, nieuwe terminal, conda activate
+     syntra-ds, claude update.
+Werkwijze blijft: stap per stap, akkoord voor elke stap, alles in
+  proces.txt, elke beslissing in beslissingslog.md.
+
+==========================================================================
+SESSIE 2026-11-06
+==========================================================================
+Ilse: "waar waren we gebleven?"
+Wat ik nu doe: einde proces.txt en beslissingslog.md lezen (enkel
+  lezen) en de stand van zaken + open punten van 05/11 samenvatten.
+Status: wacht op keuze Ilse waarmee we starten.
+Ilse: "de mail heb ik gisteren al verstuurd. Nog geen antwoord gekregen"
+Wat ik deed: data-exploratie.md (B1, prijs per m2): regel toegevoegd
+  "mail verstuurd op 2026-11-05; op 2026-11-06 nog geen antwoord".
+  Open punt 1 van 05/11 is afgerond (behalve wachten op antwoord).
+Status: voorstel: verder met open punt 3 (teldatum inwoners) en 4
+  (controlecijfer B2); wacht op akkoord Ilse.
+Wat ik deed: punt 3 (teldatum inwoners) voorgelegd: a) 1/1 zelfde jaar
+  (voorstel AI), b) 1/1 jaar erna, c) gemiddelde.
+Ilse: "ik kies b."
+Wat ik deed: INE-API tabel 2856 bevraagd (nult=1, enkel lezen):
+  laatste telling = 1/1/2025 (Guardamar 18.564; Torrevieja 98.533).
+  1/1/2026 bestaat nog NIET -> bij keuze b ontbreekt het cijfer voor
+  de verkopen van 2025.
+  Vervolgvraag voorgelegd: hoe 2025 opvangen? (wachten / uitzondering
+  1/1/2025 / 2025 leeg laten). Opgemerkt: uitzondering botst met
+  rij 40 (geen dichtstbijzijnd jaar).
+Status: wacht op keuze 2025 + waarom van Ilse (wordt rij 58).
+Ilse: "het is moeilijk. Ik hoop dat de data er is voor 1/1/2026, maar
+  als ze er niet is, dan toch beter keuze a"
+Wat ik deed: interpretatie voorgelegd ter bevestiging: voorkeur b;
+  is 1/1/2026 er niet tegen het moment van samenvoegen (stap 3), dan a
+  voor ALLE jaren (niet enkel 2025, om niet te mengen). Waarom gevraagd.
+Status: wacht op bevestiging + waarom (rij 58 nog niet geschreven).
+Ilse: "ik ga er van uit dat het einde van een jaar de beste weergave
+  is. Indien de data er niet is kies ik a"
+Wat ik deed: rij 58 in beslissingslog.md (waarom = woorden Ilse);
+  "a" opgevat als a voor alle jaren (zoals voorgelegd).
+  data-exploratie.md bijgewerkt: B4 punt 2, sectie 5 (kolom inwoners),
+  sectie 6 (open vraag -> beslist).
+  Open punt 3 van 05/11 afgerond.
+Status: voorstel volgende: punt 4 (controlecijfer B2 per jaar).
+Ilse: "we gaan verder met punt 5"
+  (= punt 4, controlecijfer B2, uitgesteld zoals voorgesteld door de AI:
+   beslissen als we weten hoe de echte prijs eruitziet. Nog te loggen.)
+Wat ik nu doe: B5 INE bekijken via de INE-API (enkel lezen).
+Wat ik deed:
+  - OPERACIONES_DISPONIBLES: IPV (id 15) en ETDP (id 7) gevonden.
+  - IPV tabellen: 79540, 79541, 79563, 80270, 80271, 80272 -> allemaal
+    nationaal of per CCAA (regio). Index, geen EUR/m2. NIET per gemeente.
+  - ETDP tabellen 6150, 6155, 49280 (compraventa viviendas): 360
+    reeksen = nationaal + CCAA + provincies (x5 types). Fijnste niveau
+    = provincie Alicante/Alacant (o.a. "Vivienda segunda mano").
+    Geen enkele gemeente. Laatste periode tabel 6150: 2026, maand 8.
+  Conclusie AI: B5 niet bruikbaar per gemeente (status voorstel: ❌);
+    eventueel enkel context (provincie/regio) voor E7.
+Status: voorstel aan Ilse (status ❌ + context ja/nee); wacht op akkoord.
+Ilse: "1 het gaat me om een vergelijking tussen de gemeentes"
+Wat ik deed: opgevat als: punt 1 (status ❌) akkoord, en uit het
+  waarom afgeleid: vraag 2 = b (niet bewaren als context).
+  - beslissingslog.md rij 59 (waarom = woorden Ilse).
+  - data-exploratie.md: B5 in overzichtstabel -> ❌ (06/11); kliklijst
+    B5 afgevinkt; bevindingen B5 1-3 toegevoegd.
+  Open punt 5 (B5) afgerond; B7 coordinaten blijft over.
+Status: gevraagd: klopt interpretatie b? + waarom uitstel punt 4
+  (wordt rij 60). Volgende: B7 coordinaten.
+Ilse: "waar ging punt 4 weer over?"
+Wat ik deed: punt 4 opnieuw uitgelegd (controlecijfer B2: 4e kwartaal
+  of gemiddelde 4 kwartalen; voorstel AI = uitstellen tot we weten hoe
+  de echte prijs eruitziet).
+Status: wacht op akkoord/waarom uitstel (rij 60) of andere keuze.
+Ilse: "wat moeten we nog beslissen als we geen data hebben van
+  notariaat?"
+Wat ik deed: overzicht gegeven (enkel uitleg, geen bestanden gewijzigd):
+  zonder Notariaat eerst kiezen welke prijsbron (Idealista vraagprijs
+  per gemeente / B2 taxatie 4 van 6 / Registradores per provincie),
+  daarna de vervolgbeslissingen per keuze (o.a. Idealista: maand->jaar,
+  42 of 504 cijfers, woningtype; en punt 4 volgt dan daaruit).
+Status: wacht op reactie Ilse.
+Ilse: "ga naar b7"
+  (punt 4 uitstel: rij 60 later, waarom nog niet gegeven)
+Wat ik nu doe: B7 coordinaten via Wikidata (SPARQL op INE-gemeentecode
+  P772, enkel lezen).
+Wat ik deed: resultaat (lon, lat) = centrum van de hoofdkern:
+  03065 Elche (-0.6983, 38.2669) | 03133 Torrevieja (-0.6833, 37.9778)
+  03121 Santa Pola (-0.5556, 38.1897) | 03099 Orihuela (-0.9469, 38.0856)
+  03076 Guardamar (-0.6550, 38.0897) | 03902 Pilar (-0.7926, 37.8675)
+  Vaststelling AI: Elche (~10 km) en Orihuela (~25 km) liggen dan in
+  het binnenland; data-exploratie.md zegt "punt op de kust" (E8).
+  Keuze voorgelegd: a) centrum gemeente, b) kustpunt voor Elche en
+  Orihuela, c) iets anders.
+Status: wacht op keuze + waarom Ilse.
+Ilse: "we moeten stoppen voor vandaag"
+Wat ik deed: rij 60 (uitstel punt 4, waarom open) en open beslissing
+  B7 in beslissingslog.md; samenvatting hieronder.
+
+==========================================================================
+EINDE SESSIE 2026-11-06 - STAND VAN ZAKEN
+==========================================================================
+Afgerond vandaag:
+  - Mail Notariaat verstuurd op 2026-11-05; nog geen antwoord
+    (genoteerd in data-exploratie.md).
+  - Rij 58: teldatum inwoners = 1/1 van het jaar erna (b); is 1/1/2026
+    er niet bij stap 3, dan 1/1 van hetzelfde jaar voor alle jaren (a).
+    INE-API: laatste telling nu = 1/1/2025.
+  - Rij 59: B5 INE (IPV per regio, ETDP per provincie) ❌, ook niet als
+    context.
+  - Rij 60: punt 4 (controlecijfer B2) uitgesteld - waarom nog open.
+  - Uitgelegd wat er te beslissen valt zonder Notariaat: eerst de
+    prijsbron (Idealista / B2 / Registradores), de rest volgt daaruit.
+  - B7: coordinaten van de 6 centra opgehaald (Wikidata) - zie hoger.
+Bestanden gewijzigd: proces.txt, beslissingslog.md (60 rijen),
+  data-exploratie.md (B1 mailstatus, B4 teldatum, B5 ❌).
+Stand bronnen: B1 wacht op antwoord | B2 controle 4/6 | B3 bruikbaar
+  met beperking | B4 bruikbaar | B5 ❌ | B6 reserve | B7 keuze open.
+Open voor de volgende sessie:
+  1. B7: kaartpunt Elche/Orihuela: centrum (a) of kustpunt (b)? + waarom.
+     Daarna B7 in data-exploratie.md zetten.
+  2. Waarom rij 60 invullen.
+  3. Antwoord Notariaat opvolgen; zo niet na ~1 week: portaal opnieuw
+     proberen of herinnering sturen.
+  4. Idealista: reserve (a) of extra (b); maand->jaar; 42 of 504 cijfers.
+  5. Mission statement v2.
+  6. Ilse tekent het dashboard.
+  7. Claude Code bijwerken (claude update, aparte terminal).
+Werkwijze blijft: stap per stap, akkoord voor elke stap, alles in
+  proces.txt, elke beslissing in beslissingslog.md.
+
+==========================================================================
+SESSIE 2026-11-07
+==========================================================================
+Ilse: "we doen nog even verder"
+Wat ik nu doe: stand van zaken gelezen (einde sessie 06/11) en open
+  punt 1 voorgelegd: B7 kaartpunt Elche/Orihuela (a centrum / b kustpunt
+  / c iets anders) + waarom.
+Status: wacht op keuze + waarom Ilse.
+Ilse: "het gaat me inderdaad vooral over de kustgemeentes. Maar voor de
+  juistheid moeten we dan de vermelding zetten bij die 2 gemeentes"
+Wat ik deed: opgevat als keuze b, met de vermelding enkel bij Elche en
+  Orihuela (status: aangepast).
+  - Wikidata (SPARQL, enkel lezen) kustkernen opgezocht:
+    Orihuela Costa Q2803214 (barrio/distrito, gemeente Orihuela):
+      (-0.7535, 37.9004)
+    Los Arenales del Sol Q9023882 (asentamiento = woonkern, gemeente
+      Q10509 = Elche, INE 03065): (-0.5214, 38.2531)
+    Niet gebruikt: Q28121430 "Arenales del Sol" = playa urbana (strand),
+      (-0.5176, 38.2574). Reden AI: kern i.p.v. strand, zelfde soort
+      punt als bij de andere 4 gemeentes.
+  - beslissingslog.md: rij 61 (waarom = woorden Ilse); open beslissing
+    B7 onderaan geschrapt.
+  - data-exploratie.md nog NIET aangepast: B7-blok eerst voorgelegd
+    (zoals bij B4, B2, B6).
+Status: wacht op akkoord B7-tekst voor data-exploratie.md.
+Ilse: "waarom is arenales geen kustgemeente? Het strand ligt maar 500m
+  verder?"
+Wat ik deed: misverstand rechtgezet (enkel uitleg, geen bestanden
+  gewijzigd): Arenales del Sol is geen gemeente, maar een kern binnen
+  de gemeente Elche. Elche is wel een kustgemeente. Woonkern en strand
+  liggen allebei aan de kust; de keuze kern/strand verandert niets aan
+  de kaart (500 m).
+Status: wacht nog op akkoord B7-tekst (+ eventueel waarom, rij 62).
+Ilse: "akkoord met de woonkern want het gaat ook over huizen, je mag B7
+  invullen"
+Wat ik deed:
+  - data-exploratie.md: B7 in overzichtstabel -> ✅ bruikbaar (07/11);
+    controlelijst B7 afgevinkt + tabel 6 punten + bevindingen 1-3;
+    sectie 5 rij lat/lon ingevuld.
+  - beslissingslog.md: rij 62 (waarom = woorden Ilse).
+  Open punt 1 (B7) afgerond. Alle bronnen B1-B7 hebben nu een status.
+Status: volgende open punten voorgesteld (waarom rij 60, Notariaat,
+  Idealista, mission statement v2, dashboard tekenen).
+Ilse: "Ik hoop nog steeds op een antwoord van het notariaat. Ik heb nog
+  geen antwoord gekregen."
+Wat ik deed: data-exploratie.md regel "Stand" bij B1: op 2026-11-07 nog
+  geen antwoord, opvolgen rond 2026-11-12 (zoals afgesproken: ~1 week).
+Status: gevraagd waarmee verder: rij 60 (waarom) of mission statement v2.
+Ilse: "leg me rij 60 nog eens uit"
+Wat ik deed: rij 60 opnieuw uitgelegd (enkel uitleg, geen bestanden
+  gewijzigd): B2 taxatie per kwartaal -> 1 cijfer per jaar nodig om te
+  vergelijken met de echte prijs; 4e kwartaal (eindstand) of gemiddelde
+  van 4 kwartalen; welke past hangt af van hoe de echte prijs per jaar
+  eruitziet (Notariaat onbekend; bij Idealista: december of gemiddelde
+  van 12 maanden). Daarom uitstellen; appels met appels vergelijken.
+Status: wacht op waarom rij 60 of andere keuze.
+Ilse: "ik zou op dit moment kiezen om niet meer uit te stellen. Ik heb
+  nog maar een paar dagen om het project voor een eerste keer voor te
+  stellen. Ik kies dan voor een gemiddelde"
+Wat ik deed:
+  - beslissingslog.md: rij 63 = herziening van rij 60 (eigen beslissing
+    Ilse, gemiddelde van 4 kwartalen); waarom-cel rij 60 -> "herzien,
+    zie rij 63"; bij open punt Idealista gevolg toegevoegd: gemiddelde
+    van 12 maanden past beter bij het B2-gemiddelde (nog te beslissen).
+  - data-exploratie.md: open vraag controlecijfer (sectie 6) -> beslist;
+    sectie 5 rij taxatiewaarde_m2 -> gemiddelde 4 kwartalen.
+  Nieuwe info: eerste voorstelling van het project binnen enkele dagen
+  (exacte datum nog te vragen).
+Status: datum voorstelling gevraagd + wat moet er dan klaar zijn.
+Ilse: "op 10 november moet ik al mijn eerste werk laten zien. Als we nu
+  langer uitstellen, is er niet de zekerheid dat ik iets kan laten zien.
+  Voorlopig enkel nog het plan. Op 17 november moet het hele project
+  klaar zijn zodat ik een presentatie kan geven."
+Wat ik deed: deadlines genoteerd (geheugen + hier):
+  - di 2026-11-10: eerste werk tonen = het plan
+  - di 2026-11-17: hele project klaar + presentatie
+  Vaststelling AI: opvolgen Notariaat rond 12/11 laat maar 5 dagen tot
+  17/11; wachten op het Notariaat kan de bouw blokkeren.
+  Voorstel aan Ilse: (1) prijsbron nu kiezen: Idealista als werkbron,
+  Notariaat vervangt het als het op tijd antwoordt; (2) planning tot
+  10/11 (plan) en tot 17/11 (app + presentatie).
+Status: wacht op reactie Ilse op voorstel prijsbron + planning.
+Ilse: "kan jij eventueel data lezen uit een screenshot"
+Wat ik deed: uitleg (geen bestanden gewijzigd): ja, AI kan afbeeldingen
+  lezen (Read-tool), maar kans op leesfouten bij cijfers -> controle
+  nodig. Alternatief voorgesteld dat nauwkeuriger is: tabel op de
+  Idealista-pagina selecteren + kopieren (Ctrl+C) en plakken in een
+  tekstbestand; screenshots als terugvaloptie. Werkwijze + controle
+  voorgesteld.
+Status: wacht op keuze werkwijze + nog open: akkoord Idealista als
+  werkbron, planning, opzoeken verwachtingen 10/11.
+Ilse: "ik probeer eerst Torrevieja te kopieren"
+Wat ik deed: leeg bestand data/ruw/idealista_torrevieja.txt aangemaakt
+  (zelfde map als de andere ruwe brondata) om de gekopieerde tabel in te
+  plakken. Werkwijze (kopieren, test met 1 gemeente) = keuze Ilse; nog
+  niet in beslissingslog: wachten tot de test gelukt is.
+Status: Ilse kopieert de Idealista-tabel van Torrevieja.
+Ilse: "ik heb gekopieerd. Check jij even of het zo lukt?"
+Wat ik deed: data/ruw/idealista_torrevieja.txt gecontroleerd (enkel
+  lezen):
+  - 251 regels = kop + 250 maanden (01/2006 - 10/2026), geen dubbels,
+    geen ontbrekende maanden; 01-09/2006 zonder prijs ("en").
+  - Pagina was door de browser naar het Nederlands vertaald: "en" =
+    vertaling van een leeg vak; vertaling beschadigde enkele
+    variatiecijfers (bv. "+ 23%" i.p.v. vermoedelijk "+2,3%"); 41
+    prijzen met spatie na het euroteken.
+  - FOUT VAN DE AI in eerste controlescript: regex verwijderde ook elk
+    cijfer "2" uit de prijzen -> 110 valse afwijkingen. Verbeterd en
+    opnieuw uitgevoerd.
+  - Controle: prijs maand t / prijs maand t-1 - 1 vergeleken met de
+    maandelijkse variatie op de site (240 maandparen, marge 0,1 pp):
+    3 afwijkingen, allemaal voor 2019 (2007-06: variatie beschadigd
+    door vertaling "-23%", prijs klopt; 2013-10 en 2013-12: afronding).
+  - 2019-2025: 84 van 84 maanden met prijs, geen afwijkingen.
+    Jaargemiddelden (voorlopig, 12 maanden): 2019 1414 | 2020 1437 |
+    2021 1469 | 2022 1593 | 2023 1766 | 2024 1974 | 2025 2266 EUR/m2.
+  Conclusie AI: kopieren werkt; advies: browservertaling uitzetten bij
+    de andere 5 gemeentes.
+Status: wacht op akkoord om de andere 5 gemeentes zo te kopieren +
+  akkoord Idealista als werkbron (waarom).
+Ilse: "ik heb de data in een excel geplakt nl Torevieja.xlsx werkt dit
+  beter voor jou"
+Wat ik deed: data/ruw/Torevieja.xlsx gelezen (openpyxl, enkel lezen):
+  1 blad, 251 rijen, 5 kolommen. Excel zette maanden om naar datums
+  (mmm-yy) en variaties naar percentages; prijzen bleven tekst
+  ("€2.566/m2"). Vergeleken met idealista_torrevieja.txt: zelfde 250
+  maanden, 0 prijsverschillen.
+  Advies AI: beide werken; .txt is iets veiliger (Excel kan bij plakken
+  omzetten, bv. "2.566" -> 2,566 of datum bij andere landinstelling).
+  Voorstel: 1 vorm kiezen voor alle 6 gemeentes.
+Status: wacht op keuze .txt of .xlsx + akkoord Idealista werkbron.
+Ilse: "ik gebruik .txt voor de andere gemeentes"
+Wat ik deed:
+  - beslissingslog.md rij 64 (werkwijze kopieren -> .txt; waarom nog in
+    te vullen door Ilse).
+  - lege bestanden aangemaakt in data/ruw/: idealista_elche.txt,
+    idealista_santa_pola.txt, idealista_orihuela.txt,
+    idealista_guardamar.txt, idealista_pilar.txt.
+  - Torevieja.xlsx blijft staan (niet verwijderen zonder akkoord).
+Status: Ilse kopieert de andere 5 gemeentes. Nog open: akkoord Idealista
+  als werkbron (+ waarom, rij 65), waarom rij 64.
+Ilse: "een vraagje, wil jij dat ik de vertaling naar nederlands uitzet?"
+Wat ik deed: uitleg (geen bestanden gewijzigd): ja, aangeraden, niet
+  verplicht. Reden: vertaling verminkte bij Torrevieja enkele cijfers
+  ("+ 23%"); Spaanse pagina = originele tekst; AI leest Spaanse
+  maandnamen en lege vakken. Kopieer je toch vertaald, dan vangt de
+  controle (prijs vs maandvariatie) de meeste fouten op.
+Status: Ilse kopieert de andere 5 gemeentes.
+Ilse: "bij orihuela kan ik districten kiezen. Dat is ook zo bij Elche.
+  Doe ik dat best en welke kies ik dan?"
+Wat ik deed: keuze voorgelegd (geen bestanden gewijzigd):
+  a) hele gemeente (zelfde niveau als B3 verkopen, B4 inwoners, B2;
+     past bij rij 61 "cijfers = hele gemeente") - voorstel AI;
+  b) enkel kustdistrict (Orihuela Costa / kustdistrict Elche): beter
+     voor de kust, maar niet te combineren met verkopen/inwoners per
+     gemeente (E4, E6, E8);
+  c) a als hoofdcijfer + kustdistrict als extra info (meer werk).
+  Gevraagd welke districten Idealista toont (AI kan de site niet openen).
+Status: wacht op keuze + waarom Ilse (rij 65 of volgende vrij nummer).
+Ilse: "hoeveel extra werk en tijd kost optie c"
+Wat ik deed: inschatting gegeven (geen bestanden gewijzigd):
+  - Ilse: 2 extra tabellen kopieren, ~3 min elk (Torrevieja: bestand
+    klaar 09:30, geplakt 09:33) -> ~5-10 min.
+  - AI: zelfde controle, enkele minuten; in de app 1 extra regel/
+    opmerking bij 2 gemeentes, klein (schatting AI ~een half uur incl.
+    testen).
+  - Risico's: district Elche valt mogelijk niet samen met Arenales del
+    Sol; kleinere districten kunnen meer lege maanden hebben.
+  Voorstel AI: nu al kopieren (goedkoop), later beslissen of het op het
+  dashboard komt.
+Status: wacht op keuze a/c (+ waarom) en lijst districten.
+Ilse: "c"
+Wat ik deed:
+  - beslissingslog.md rij 65 (keuze c; waarom nog in te vullen); open
+    beslissing toegevoegd: kustdistrict op dashboard ja/nee en hoe.
+  - leeg bestand data/ruw/idealista_orihuela_costa.txt aangemaakt;
+    bestand Elche-district wacht op de naam van het district.
+Status: wacht op naam district Elche + waarom rij 64 en 65; akkoord
+  Idealista als werkbron schuift naar rij 66.
+Ilse: "elche : zie elche.png"
+Wat ik deed: Elche.png (projectmap) gelezen: districtenlijst Idealista
+  Elche (Spaanstalig: "Elige Distrito"): o.a. Arenales del Sol, El Altet
+  - Balsares, Elche Ciudad, La Marina, Torrellano, ...
+  -> apart district "Arenales del Sol" = zelfde kustkern als kaartpunt
+  (rij 61). Leeg bestand data/ruw/idealista_elche_arenales.txt
+  aangemaakt. Vaststelling AI: ook La Marina (en deels El Altet -
+  Balsares) liggen aan de kust; niet gekozen (kaartpunt = Arenales).
+Status: Ilse kopieert 7 tabellen (5 gemeentes + 2 kustdistricten).
+Ilse: "neem toch alle kustdistricten voor elche."
+Wat ik deed:
+  - beslissingslog.md rij 66 (alle kustdistricten Elche; waarom nog in
+    te vullen); open beslissing: hoe samenvoegen + lijst districten.
+  - lege bestanden: data/ruw/idealista_elche_la_marina.txt,
+    data/ruw/idealista_elche_el_altet.txt.
+  Lijst kustdistricten = inschatting AI (Arenales del Sol, La Marina,
+    El Altet - Balsares); Torrellano e.a. liggen landinwaarts. Door
+    Ilse te bevestigen.
+  Vraag voorgelegd: samenvoegen tot 1 kustcijfer (gewoon gemiddelde;
+    gewogen kan niet: aantal woningen per district onbekend) of de 3
+    apart tonen. Kaartpunt blijft Arenales del Sol (rij 61).
+Status: wacht op bevestiging lijst + keuze samenvoegen; Ilse kopieert
+  nu 9 tabellen. Akkoord Idealista als werkbron schuift naar rij 67.
+Ilse: "alle bestanden zijn gevuld, controleer ze maar"
+Wat ik deed: 8 nieuwe bestanden + Torrevieja gecontroleerd met
+  controlescript in scratchpad (controle_idealista.py, enkel lezen; niet
+  in het project). Alle 8 nieuwe in het Spaans (vertaling uit); orihuela_
+  costa: kopwoord "Mes" ontbreekt (geen probleem).
+  Resultaat per bestand: 250 maanden (01/2006-10/2026), 0 dubbels, 0
+  ontbrekend; 2019-2025: 84/84 maanden met prijs in alle 9 bestanden.
+  Prijs vs maandvariatie 2019-2025: 2 afwijkingen van 0,1 pp (Elche
+  2022-12, El Altet 2024-07) = afronding.
+  Sprongen > 5%/maand (vanaf 2018): El Altet 2025-07 (+7,0%); La Marina
+  2024-03, 2025-11, 2026-01, 2026-05, 2026-08 (+-5 a 8%); Pilar 2025-02
+  (+5,1%). Allemaal in overeenstemming met de variatie op de site ->
+  geen kopieerfout, maar schommelingen (vermoedelijk weinig woningen
+  te koop in kleine districten).
+  Jaargemiddelden 2025 (12 maanden, vraagprijs EUR/m2): Elche 1690 |
+  Arenales 3150 | El Altet 1824 | La Marina 2253 | Santa Pola 2348 |
+  Orihuela 2610 | Orihuela Costa 2809 | Guardamar 2314 | Pilar 3053 |
+  Torrevieja 2266.
+  Vaststelling AI: 3 kustdistricten Elche liggen ver uit elkaar (1824 -
+  3150) -> keuze samenvoegen is belangrijk; Orihuela en Orihuela Costa
+  liggen dicht bij elkaar.
+Status: wacht op keuze samenvoegen kustdistricten Elche + akkoord
+  Idealista als werkbron (rij 67) + waarom rij 64-66.
+Ilse: "b, de 3 apart tonen"
+Wat ik deed: beslissingslog.md rij 67 (3 kustdistricten Elche apart;
+  waarom nog in te vullen); open beslissing aangepast: enkel nog
+  nakijken lijst kustdistricten.
+Status: wacht op akkoord Idealista als werkbron (rij 68) + waarom
+  rij 64-67.
+Ilse: "akkoord met Idealista als werkbron, want notariaat is geen
+  zekerheid van antwoord of gunstig antwoord"
+Wat ik deed:
+  - beslissingslog.md rij 68 (waarom = woorden Ilse); open beslissing
+    Idealista aangepast: nog open = maanden -> jaar (gemiddelde of
+    december) en Idealista als extra als Notariaat toch antwoordt.
+  - data-exploratie.md: B6 overzicht -> ✅ werkbron (07/11, rij 68);
+    bevindingen B6 6-9 (overname, controle, schommelingen, Elche-
+    districten); sectie 5 prijs_m2 ingevuld (bewerking maanden -> jaar
+    nog te kiezen); sectie 6: prijsbron beslist.
+Status: gevraagd: maanden -> jaar (gemiddelde 12 maanden of december).
+  Daarna: basistabel maken (stap 3?) of eerst het plan voor 10/11.
+Ilse: "zie pdf in 'C:\Users\ilske\Dropbox\Syntra Python data development\
+  DS1\06 project 1' deze stappen zijn we aan het volgen. ik zou nog graag
+  punt 3 de pipeline willen klaar hebben tegen 10/11"
+  (keuze maanden -> jaar a/b nog niet beantwoord)
+Wat ik deed: PDF "Project 1 - demo-case verkeersveiligheid.pdf" gelezen
+  (6 pagina's). De 7 stappen van de opdracht:
+    1 Ontwerp (4 pijlers + dashboard tekenen)
+    2 Spec-prompt voor Claude Code, eindigend met "Stel ons eerst een
+      vraag op elke plek waar je zelf een aanname zou maken. Begin pas
+      met bouwen als alle vragen beantwoord zijn." Antwoorden -> logboek.
+    3 Pijplijn: pipeline.py (pure functies, 1 per stap, geen Streamlit)
+      + app.py met per stap een st.expander (rijen in/uit, waarom rijen
+      wegvallen, voorbeeld data) + rijen-trechter bovenaan.
+    4 CLAUDE.md met projectafspraken
+    5 Git (init/add/commit/push, minstens 1 branch + merge)
+    6 pytest op pipeline.py + zelf een gat in de tests opvullen
+    7 Deploy Streamlit Community Cloud (publieke URL)
+  Oplevering: repo met pipeline.py, app.py, tests, CLAUDE.md,
+    beslissingslogboek.md (!naam: wij gebruiken beslissingslog.md) +
+    URL + origineel ontwerp.
+  Vaststelling AI: "STAP 1-5" in proces.txt (02/11) = de 4 pijlers
+    binnen PDF-stap 1. Stand: stap 1 bijna klaar (dashboardtekening en
+    mission statement v2 open); stap 2 nog niet gedaan; stap 3 nog niet.
+    Geen git-repo.
+  Geheugen bijgewerkt: 10/11 = plan + pipeline (stap 3).
+  Voorstel planning tot 10/11 voorgelegd (zie chat).
+Status: wacht op akkoord planning + keuze maanden -> jaar (a/b).
+Ilse: "akkoord met de planning, a want past bij rij 63"
+Wat ik deed: beslissingslog.md rij 69 (planning; waarom nog in te
+  vullen) en rij 70 (gemiddelde 12 maanden; waarom = woorden Ilse);
+  open beslissing Idealista ingekort. data-exploratie.md sectie 5
+  prijs_m2: bewerking = gemiddelde 12 maanden (rij 70).
+Wat ik nu doe: planning stap 1 -> mission statement v2. Eerst de
+  elementen E2-E8 en de rijen over "rangschikken" (31, 34, 37) nalezen.
+Wat ik deed: concept mission_statement_v2.md geschreven (nieuw bestand;
+  versie 1 blijft bestaan). Wijzigingen t.o.v. v1:
+  - hoofdvraag: vraagprijs per m², tweedehandswoningen (rij 51, 68)
+  - V2-V4: "rangschikken" -> "vergelijken (gesorteerd)" (rij 37);
+    kolom "Brainstorm" vervangen door "Element" (E2-E8)
+  - infovraag Belgen -> "bewust niet" (rij 55)
+  - afbakening: kustdistricten (rij 65-67), woning (51), prijs =
+    vraagprijs (68), maanden -> jaar (70)
+  - data: B6 werkbron, B3, B4, B2 controle, B7, B1 vervanger, B5 ❌
+  - werkwijze: controle Idealista vs B2; tonen volgens rij 34-41
+  - beperkingen: vraagprijs, prijs/verkopen andere woningen, kleine
+    districten, controle 4/6
+  Aanname AI: Idealista-prijs gaat over alle woningen (woningtype niet
+    vermeld) - genoteerd als beperking.
+Status: wacht op akkoord (of aanpassingen) mission statement v2.
+Ilse: "akkoord laat de 2 bestanden bestaan"
+Wat ik deed: beslissingslog.md rij 71 (mission statement v2 aanvaard,
+  v1 blijft; waarom nog in te vullen); open beslissing "mission
+  statement v2" geschrapt.
+
+==========================================================================
+PDF-STAP 2 - SPEC-PROMPT
+==========================================================================
+Wat de PDF vraagt: het ontwerp omzetten in een prompt voor Claude Code,
+  eindigend met "Stel ons eerst een vraag op elke plek waar je zelf een
+  aanname zou maken. Begin pas met bouwen als alle vragen beantwoord
+  zijn." Elk antwoord meteen in het beslissingslogboek.
+Wat ik nu doe: eerst nakijken welke data in welke vorm in de projectmap
+  staat (bestandsnamen voor de prompt), daarna een concept spec_prompt.md
+  schrijven dat Ilse nakijkt en aanpast.
+Wat ik deed: concept spec_prompt.md geschreven (ik-vorm, als prompt van
+  Ilse aan Claude Code): doel + scope (stap 3 tegen 10/11, dashboard
+  later), invoer (bestanden in data/ruw + inwoners/coordinaten nog geen
+  bestand), bouw (pipeline.py pure functies, app.py expanders, trechter,
+  cache), 4 pijplijnstappen, vastliggende afspraken (rij 29, 39, 40, 58,
+  63, 65-67, 70), slotzin uit de PDF ("ons" -> "me": Ilse werkt alleen).
+  Aanname AI: stap 5-6 (tonen, besluiten) niet in deze prompt (=17/11).
+Status: wacht op nalezen/aanpassen spec-prompt door Ilse.
+Ilse: "waarom deden we deze weer? - Prijs per jaar = gemiddelde van de
+  12 maanden (rij 70); taxatiewaarde per jaar = gemiddelde van de 4
+  kwartalen (rij 63)."
+Wat ik deed: uitleg (geen bestanden gewijzigd): bronnen leveren per
+  maand/kwartaal, dashboard werkt per jaar -> 1 cijfer per jaar nodig;
+  beide als gemiddelde = zelfde soort cijfer -> eerlijke controle
+  (appels met appels); extra: gemiddelde vlakt schommelingen af.
+  Waaroms van Ilse herhaald (rij 63 tijdsdruk, rij 70 past bij 63).
+Status: wacht op akkoord spec-prompt.
+Ilse: "akkoord met de spec-prompt, stel je vragen maar"
+Wat ik deed: beslissingslog.md rij 72 (spec-prompt aanvaard; waarom nog
+  in te vullen). Start vragenronde (een voor een).
+Vraag S1 (structuur/openbaarheid): projectmap bevat ook persoonlijke
+  bestanden (mail_notariaat.txt met e-mailadressen, proces.docx,
+  proces.txt, Elche.png, Word-tijdelijke bestanden). Repo wordt later
+  publiek op GitHub (stap 5/7). Opties:
+  a) app in deze map + .gitignore voor persoonlijke bestanden
+     (voorstel AI);
+  b) app in een aparte nieuwe map (enkel app + data + logboek);
+  c) alles in de repo.
+Status: wacht op antwoord S1.
+Ilse (S1): "a, zo blijft alles op een plek"
+Wat ik deed: beslissingslog.md rij 73. Vervolgvraag S1b: welke
+  bestanden op de .gitignore (voorstel AI in de chat).
+Status: wacht op antwoord S1b.
+Ilse (S1b): "elche.png uitsluiten, proces.txt meenemen"
+Wat ik deed:
+  - Gecontroleerd (eerder bewering AI, niet nagekeken): geen e-mail-
+    adressen in proces.txt, beslissingslog, data-exploratie,
+    Brainstorming, mission statements, spec-prompt. Wel: Windows-
+    gebruikersnaam in 1 pad, provider Telenet (gemeld).
+  - .gitignore aangemaakt (lijst rij 74). Git zelf nog niet gestart.
+  - beslissingslog.md rij 74 (waarom nog in te vullen).
+Vraag S2 (inwoners en coordinaten als bestand) gesteld.
+Status: wacht op antwoord S2.
+Controle rij 58 (stap 3 = nu): INE-API tabel 2856 (2026-11-07, enkel
+  lezen): laatste telling = 1/1/2025; 1/1/2026 bestaat nog niet.
+  -> volgens rij 58 de terugvaloptie: verkopen jaar X <-> telling 1/1
+  van jaar X, voor alle jaren (geen nieuwe beslissing, gevolg van 58).
+Vraag S2 (inwoners en coordinaten als bestand) gesteld: a) eenmalig
+  ophalen en bewaren als CSV in data/ruw (voorstel AI); b) app haalt
+  live op bij INE/Wikidata; c) cijfers in pipeline.py typen.
+Status: wacht op antwoord S2.
+Ilse (S2): "a, dan blijft alles op een plek en werkt het offline en ik
+  kan ze later opnieuw laten ophalen"
+Wat ik deed:
+  - beslissingslog.md rij 75 (waarom = woorden Ilse).
+  - ophalen_bronnen.py geschreven (apart van pipeline.py; gebruikt
+    internet): ophalen_ine() + ophalen_coordinaten().
+  - INE: data/ruw/ine_2856_inwoners.csv = 426 reeksen, 3408 rijen (alle
+    gemeentes Alicante, totaal/mannen/vrouwen, 2018-2025, ongefilterd).
+    Controle: 42 cijfers (6 gemeentes x 2019-2025) identiek aan B4 in
+    data-exploratie.md.
+  - Wikidata: 2x HTTP 429 "Aggressively rate-limiting to 1 req / min"
+    (storing bij Wikidata). Opgelost: 2 vragen samengevoegd tot 1
+    (UNION) + bij 429 65 s wachten en 1x opnieuw. Draait op de
+    achtergrond.
+  - Achtergrondpoging: na 65 s wachten opnieuw 429 (storing SPARQL-dienst
+    van Wikidata). Opgelost: ophalen_coordinaten() gebruikt nu de gewone
+    Wikidata-API (w/api.php): zoeken op haswbstatement:P772=<INE-code>
+    + wbgetentities (P625). SPARQL-code verwijderd.
+  - data/ruw/wikidata_coordinaten.csv: 6 kaartpunten met Wikidata-code
+    (Elche Q9023882, Torrevieja Q221749, Santa Pola Q257707, Orihuela
+    Q2803214, Guardamar Q927965, Pilar Q956513). Controle: identiek aan
+    B7-tabel in data-exploratie.md.
+Vraag S3 (rijen-trechter: wat telt als rij) gesteld.
+Status: wacht op antwoord S3.
+Ilse (S3): "b, drukker maar vollediger"
+Wat ik deed: beslissingslog.md rij 76 (4 trechters, 1 per bron).
+Vraag S4 (wat doen met het verschil Idealista vs taxatiewaarde) gesteld.
+  Ruwe indicatie AI (taxatie 4e kwartaal, niet het gemiddelde): Elche
+  2019 953 vs 1096 (+15%), 2025 1540 vs 1690 (+10%); Torrevieja 2025
+  2122 vs 2266 (+7%).
+Status: wacht op antwoord S4.
+Ilse (S4): "a en c: ik wil dat het verschil te zien is en of dat er
+  tegenstrijdigheden in de data zijn"
+Wat ik deed: beslissingslog.md rij 77 (tonen + markeren bij
+  tegengestelde richting).
+Vervolgvraag S4b: telt elke tegengestelde richting, ook bij heel kleine
+  veranderingen (bv. Idealista Elche 2020->2021: 1133 -> 1124 = -0,8%)?
+  Opties: a) elk tegengesteld teken (voorstel AI: eenvoudig, en het %
+  staat erbij); b) enkel als beide veranderingen > 2%.
+Status: wacht op antwoord S4b.
+Ilse (S4b): "a voor de volledigheid"
+Wat ik deed: beslissingslog.md rij 78.
+Vraag S5 (kwartaalprijs voor E5 corona: nu al in de pipeline? hoe?)
+  gesteld.
+Status: wacht op antwoord S5.
+Ilse: "leg me nog eens uit waarom de kwartalen beter het corona-effect
+  tonen?"
+Wat ik deed: uitleg met echte cijfers (enkel lezen, geen bestanden
+  gewijzigd). B3 Torrevieja verkopen per kwartaal (rij 6152 van het
+  xls; jaarsommen kloppen met data-exploratie: 4485 / 2998 / 4566):
+    2019: 1052 1293  955 1185
+    2020:  891  362  864  881   (Q2 2020 = lockdown: -72% t.o.v. Q2 2019)
+    2021:  694 1050 1211 1611
+  Per jaar: 2019 -> 2020 = -33% (de dip wordt "uitgesmeerd").
+  Vaststelling AI: vraagprijs Torrevieja 2020 per maand zeer vlak (1426-
+  1448) -> corona zichtbaar in verkopen, nauwelijks in de vraagprijs.
+Status: wacht nog op antwoord S5.
+Ilse (S5): "omdat we nu meer specifiek over de aanschaf van een woning
+  bezig dus lijkt me het toch interessant om al te zien wat een
+  pandemie doet met prijzen"
+Wat ik deed: opgevat als keuze a; beslissingslog.md rij 79.
+Vraag S6: lijst van kleinere/technische aannames ter bevestiging in 1
+  keer (zie chat) i.p.v. elk apart.
+Status: wacht op antwoord S6.
+Ilse (S6): "1 akkoord, 2 akkoord, 3 akkoord, leg 4 opnieuw uit, leg 5
+  opnieuw uit, leg 6 opnieuw uit, 7 akkoord, leg 8 uit"
+Wat ik deed: beslissingslog.md rij 80 (punten 1, 2, 3, 7). Uitleg 4, 5,
+  6, 8 gegeven. Vaststellingen AI:
+  - 4: drempel 30 (rij 29) was bedoeld voor prijzen uit verkopen
+    (Notariaat); prijs komt nu van Idealista -> logica geldt niet meer;
+    kleinste jaar = 447 (Guardamar 2020). Keuze: stap behouden (toont 0)
+    of schrappen (rij 29 herzien).
+  - 6: is al beslist in rij 56 (kolom "meer dan 5 jaar").
+Status: wacht op keuze 4 en 5, bevestiging 6 en 8.
+Ilse: "4b, 5 kwartaaltabel enkel voor de 6 gemeenten, 6 tweedehands, 8 ok"
+Wat ik deed:
+  - beslissingslog.md rij 81 (herziening rij 29/39: drempel 30 vervalt)
+    en rij 82 (kwartaaltabel enkel 6 gemeentes; taxatie = "meer dan 5
+    jaar" bevestigt rij 56; tests bij stap 6). Waaroms nog in te vullen.
+  - drempel 30 aangepast in mission_statement_v2.md (werkwijze stap 2),
+    spec_prompt.md (stap 2 controleren) en data-exploratie.md (B3 punt 2).
+  Vragenronde spec-prompt afgerond (S1-S6, rij 73-82).
+  Git aanwezig (2.56.0), globale naam/e-mail al ingesteld (GitHub
+  noreply-adres).
+Volgende stap (planning rij 69): git starten als vangnet - akkoord
+  gevraagd.
+Status: wacht op akkoord git init + eerste commit.
