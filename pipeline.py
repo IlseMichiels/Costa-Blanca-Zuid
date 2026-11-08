@@ -177,3 +177,156 @@ def lees_inwoners(pad=RUW / "ine_2856_inwoners.csv"):
 def lees_coordinaten(pad=RUW / "wikidata_coordinaten.csv"):
     """Wikidata: 1 kaartpunt per gemeente (rij 61-62, 75)."""
     return pd.read_csv(pad, dtype={"ine_code": str})
+
+
+# --------------------------------------------------------------------------
+# Stap 2 CONTROLEREN EN FILTEREN — per bron van ruwe rijen naar 1 rij per gemeente per jaar
+# --------------------------------------------------------------------------
+# Elke functie hieronder is een "pure functie": DataFrame erin, DataFrame eruit, niets anders.
+# De functies stappen_* rijgen ze aan elkaar en onthouden na elke stap het resultaat + de reden,
+# zodat de app de rijen-trechter kan tekenen (rij 76).
+
+PERIODE = (2019, 2025)                                              # rij 11, 27
+GEMEENTE_JAREN = len(GEMEENTEN) * (PERIODE[1] - PERIODE[0] + 1)     # 6 x 7 = 42
+
+
+def filter_periode(df, van=PERIODE[0], tot=PERIODE[1]):
+    """Houdt enkel de jaren van..tot (grenzen inbegrepen)."""
+    return df[df["jaar"].between(van, tot)].reset_index(drop=True)
+
+
+def splits_kustdistricten(df):
+    """Idealista: (hele gemeentes, kustdistricten). Kustdistricten gaan apart verder (rij 65-67)."""
+    is_district = df["kustdistrict"].notna()
+    return df[~is_district].reset_index(drop=True), df[is_district].reset_index(drop=True)
+
+
+def maand_naar_jaar(df, sleutels=("ine_code",)):
+    """Vraagprijs per jaar = gemiddelde van de 12 maanden (rij 70).
+
+    Ontbreekt er een maand, dan blijft het jaar leeg (niet opvullen, rij 40);
+    de kolom aantal_maanden toont hoeveel maanden er meetelden.
+    """
+    groep = df.groupby([*sleutels, "jaar"], dropna=False)["prijs_m2"]
+    uit = groep.agg(prijs_m2="mean", aantal_maanden="count").reset_index()
+    uit.loc[uit["aantal_maanden"] < 12, "prijs_m2"] = float("nan")
+    return uit
+
+
+def maand_naar_kwartaal(df):
+    """Vraagprijs per kwartaal = gemiddelde van de 3 maanden (rij 79); leeg als er een maand ontbreekt."""
+    df = df.assign(kwartaal=(df["maand"] - 1) // 3 + 1)
+    groep = df.groupby(["ine_code", "jaar", "kwartaal"])["prijs_m2"]
+    uit = groep.agg(prijs_m2="mean", aantal_maanden="count").reset_index()
+    uit.loc[uit["aantal_maanden"] < 3, "prijs_m2"] = float("nan")
+    return uit
+
+
+def filter_provincie_alicante(df):
+    """Enkel gemeentes uit de provincie Alicante (rij 80, punt 2: geen Orihuela del Tremedal e.d.)."""
+    return df[df["provincie"].isin(["Alicante/Alacant", "Alicante"])].reset_index(drop=True)
+
+
+def filter_gemeenten(df, naamkolom):
+    """Houdt enkel de 6 kustgemeentes en voegt de INE-code toe (rij 80, punt 1)."""
+    uit = df.merge(GEMEENTEN[["ine_code", naamkolom]], on=naamkolom, how="inner")
+    return uit[["ine_code", *df.columns]]
+
+
+def kwartaal_naar_jaar(df, kolom, bewerking):
+    """Kwartalen -> jaar met 'sum' (verkopen) of 'mean' (taxatie, rij 63); leeg als er een kwartaal ontbreekt."""
+    groep = df.groupby(["ine_code", "jaar"])[kolom]
+    uit = groep.agg(**{kolom: bewerking, "aantal_kwartalen": "count"}).reset_index()
+    uit.loc[uit["aantal_kwartalen"] < 4, kolom] = float("nan")
+    return uit
+
+
+def filter_totaal(df):
+    """INE: enkel het totaal aantal inwoners, niet mannen/vrouwen apart."""
+    return df[df["geslacht"] == "Total"].reset_index(drop=True)
+
+
+def ontbrekende_gemeente_jaren(df, waardekolom):
+    """Gemeente-jaren (van de 42) zonder waarde: worden getoond, niet opgevuld (rij 40)."""
+    alle = GEMEENTEN[["ine_code", "gemeente"]].merge(
+        pd.DataFrame({"jaar": range(PERIODE[0], PERIODE[1] + 1)}), how="cross")
+    samen = alle.merge(df[["ine_code", "jaar", waardekolom]], on=["ine_code", "jaar"], how="left")
+    return samen[samen[waardekolom].isna()].reset_index(drop=True)
+
+
+def _stap(stappen, naam, reden, df):
+    """Onthoudt een tussenresultaat voor de trechter en geeft het onveranderd terug."""
+    stappen.append({"stap": naam, "reden": reden, "rijen": len(df), "data": df})
+    return df
+
+
+def stappen_idealista(ruw):
+    """Trechter Idealista: 2.500 maandrijen -> 42 gemeente-jaren (+ kustdistricten en kwartalen apart)."""
+    s = []
+    df = _stap(s, "ingelezen", "10 bestanden × 250 maanden", ruw)
+    df, districten = splits_kustdistricten(df)
+    _stap(s, "kustdistricten apart", f"{len(districten)} rijen van de 4 kustdistricten gaan apart verder (rij 65–67)", df)
+    df = _stap(s, f"enkel {PERIODE[0]}–{PERIODE[1]}", "maanden buiten de periode weg", filter_periode(df))
+    maanden = df
+    df = _stap(s, "per jaar", "12 maanden → 1 jaargemiddelde (rij 70)", maand_naar_jaar(df))
+    extra = {
+        "kwartalen": maand_naar_kwartaal(maanden),                                       # rij 79, 82
+        "districten": maand_naar_jaar(filter_periode(districten), ("ine_code", "kustdistrict")),
+        "ontbrekend": ontbrekende_gemeente_jaren(df, "prijs_m2"),
+    }
+    return s, extra
+
+
+def stappen_verkopen(ruw):
+    """Trechter verkopen: alle gemeentes van Spanje per kwartaal -> 42 gemeente-jaren."""
+    s = []
+    df = _stap(s, "ingelezen", "alle gemeentes van Spanje × 90 kwartalen", ruw)
+    df = _stap(s, "provincie Alicante", "andere provincies weg (rij 80)", filter_provincie_alicante(df))
+    df = _stap(s, "6 kustgemeentes", "andere gemeentes van Alicante weg", filter_gemeenten(df, "naam_ministerie"))
+    df = _stap(s, f"enkel {PERIODE[0]}–{PERIODE[1]}", "kwartalen buiten de periode weg", filter_periode(df))
+    kwartalen = df
+    df = _stap(s, "per jaar", "4 kwartalen → 1 jaarsom", kwartaal_naar_jaar(df, "aantal_verkopen", "sum"))
+    return s, {"kwartalen": kwartalen, "ontbrekend": ontbrekende_gemeente_jaren(df, "aantal_verkopen")}
+
+
+def stappen_inwoners(ruw):
+    """Trechter inwoners: alle reeksen van INE-tabel 2856 -> 42 gemeente-jaren.
+
+    Koppeling (rij 58, 75): 1/1/2026 bestaat nog niet -> verkopen van jaar X horen bij de telling van 1/1 van jaar X.
+    """
+    s = []
+    df = _stap(s, "ingelezen", "alle gemeentes van Alicante × totaal/mannen/vrouwen × 8 jaar", ruw)
+    df = _stap(s, "enkel totaal", "mannen en vrouwen apart weg", filter_totaal(df))
+    df = _stap(s, "6 kustgemeentes", "andere gemeentes van Alicante weg", filter_gemeenten(df, "naam_ine"))
+    df = _stap(s, f"enkel {PERIODE[0]}–{PERIODE[1]}", "telling van 1/1/2018 weg", filter_periode(df))
+    return s, {"ontbrekend": ontbrekende_gemeente_jaren(df, "inwoners")}
+
+
+def stappen_taxatie(ruw):
+    """Taxatiewaarde (controle): alle gemeentes > 25.000 inwoners -> jaargemiddelde voor onze gemeentes."""
+    s = []
+    df = _stap(s, "ingelezen", "alle gemeentes > 25.000 inwoners × 66 kwartalen", ruw)
+    df = _stap(s, "provincie Alicante", "andere provincies weg (rij 80)", filter_provincie_alicante(df))
+    df = _stap(s, "kustgemeentes", "andere gemeentes weg; Guardamar en Pilar staan er niet in (< 25.000 inwoners)",
+               filter_gemeenten(df, "naam_ministerie"))
+    df = _stap(s, f"enkel {PERIODE[0]}–{PERIODE[1]}", "kwartalen buiten de periode weg", filter_periode(df))
+    df = _stap(s, "per jaar", "4 kwartalen → 1 jaargemiddelde, kolom 'meer dan 5 jaar' (rij 63, 82)",
+               kwartaal_naar_jaar(df, "taxatie_meer5_m2", "mean"))
+    return s, {}
+
+
+def controle_taxatie(prijs_jaar, taxatie_jaar):
+    """Vraagprijs (Idealista) naast taxatiewaarde: verschil in % + tegengestelde richting (rij 77, 78).
+
+    Tegengesteld = de ene stijgt en de andere daalt t.o.v. het jaar ervoor, hoe klein ook (rij 78).
+    Blijft een van beide exact gelijk, dan telt dat niet als tegengesteld.
+    """
+    df = prijs_jaar[["ine_code", "jaar", "prijs_m2"]].merge(
+        taxatie_jaar[["ine_code", "jaar", "taxatie_meer5_m2"]], on=["ine_code", "jaar"], how="inner")
+    df = df.sort_values(["ine_code", "jaar"]).reset_index(drop=True)
+    df["verschil_pct"] = (df["prijs_m2"] / df["taxatie_meer5_m2"] - 1) * 100
+    groep = df.groupby("ine_code")
+    df["prijs_verandering_pct"] = groep["prijs_m2"].pct_change() * 100
+    df["taxatie_verandering_pct"] = groep["taxatie_meer5_m2"].pct_change() * 100
+    df["tegengesteld"] = (df["prijs_verandering_pct"] * df["taxatie_verandering_pct"]) < 0
+    return GEMEENTEN[["ine_code", "gemeente"]].merge(df, on="ine_code")

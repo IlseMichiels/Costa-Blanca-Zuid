@@ -1877,3 +1877,84 @@ Wat ik deed:
 Status: Ilse opent de app zelf; daarna commit + stap 2.
 Ilse: "het werkt. je mag een commit maken en dan gaan we verder met stap 2"
 Wat ik deed: commit "Stap 1 ophalen" (pipeline.py, app.py, logs).
+Ilse: (verder met stap 2)
+==========================================================================
+PDF-STAP 3 - PIJPLIJN: stap 2 CONTROLEREN EN FILTEREN
+==========================================================================
+Wat ik deed:
+  - Eerste poging om code toe te voegen via bash-heredoc mislukte
+    (bash: "unexpected EOF ... matching '"); bestand bleef ongewijzigd;
+    opnieuw gedaan met de Edit-tool.
+  - pipeline.py stap 2: filter_periode, splits_kustdistricten,
+    maand_naar_jaar (leeg als < 12 maanden), maand_naar_kwartaal (leeg
+    als < 3), filter_provincie_alicante, filter_gemeenten (INE-code),
+    kwartaal_naar_jaar (som/gemiddelde, leeg als < 4), filter_totaal,
+    ontbrekende_gemeente_jaren, stappen_* (trechter per bron),
+    controle_taxatie.
+  - Resultaat trechters:
+    Idealista 2500 -> 1500 (districten apart) -> 504 -> 42
+    Verkopen 732600 -> 12690 (Alicante) -> 540 -> 168 -> 42
+    Inwoners 3408 -> 1136 (totaal) -> 48 -> 42
+    Taxatie 19316 -> 1200 -> 264 -> 112 -> 28 (4 gemeentes)
+    Ontbrekende gemeente-jaren: 0 / 0 / 0. Kwartalen 168 + 168,
+    districten 28. Torrevieja-cijfers kloppen met eerdere controles.
+  - Controle taxatie: 3 tegenstrijdigheden op 24 (Torrevieja 2020,
+    Orihuela 2020, Elche 2021). Verschil vraagprijs/taxatie 3-23%,
+    behalve Orihuela 45-53% (vermoeden AI: aanbod Idealista vooral
+    Orihuela Costa; niet vastgesteld).
+  - app.py: bovenaan 3 trechters (Altair, log-schaal; 4e = samenvoegen
+    in stap 3); stap 2 met expander per bron (stappentabel rijen in/uit/
+    verschil/waarom, ontbrekend, resultaat, districten, kwartalen) +
+    expander controle taxatie. AppTest: geen fouten.
+  Aannames AI (gemeld): jaar/kwartaal leeg als er een maand/kwartaal
+    ontbreekt (i.p.v. gemiddelde van wat er is); "exact gelijk" telt
+    niet als tegengesteld; taxatie geen eigen trechter (rij 76: 4
+    trechters, taxatie = controle).
+Status: Ilse bekijkt de app.
+Ilse: "we gaan later verder"
+
+==========================================================================
+EINDE SESSIE 2026-11-07 - STAND VAN ZAKEN
+==========================================================================
+Deadlines: di 10/11 = plan + pipeline (PDF-stap 3) tonen;
+  di 17/11 = hele project + presentatie.
+Afgerond vandaag (beslissingslog rij 61-83):
+  - B7 coordinaten (kustkern Elche/Orihuela, woonkern) -> alle bronnen
+    hebben een status.
+  - Idealista = werkbron prijs (rij 68); 10 bestanden gekopieerd en
+    gecontroleerd (6 gemeentes + Orihuela Costa + 3 kustdistricten
+    Elche, apart getoond). Maand -> jaar = gemiddelde 12 maanden (70);
+    taxatie = gemiddelde 4 kwartalen (63).
+  - Mission statement v2 (71), spec-prompt + vragenronde S1-S6 (72-82):
+    o.a. .gitignore, CSV's via ophalen_bronnen.py, 4 trechters, controle
+    taxatie (verschil + tegengestelde richting), kwartaaltabel, drempel
+    30 vervalt (81).
+  - Git: commits e2dc2ec (start) en 979f451 (stap 1). Niets gepusht.
+  - Pijplijn stap 1 (ophalen) en stap 2 (controleren/filteren) gebouwd
+    en getest; app toont trechters + expanders.
+NOG NIET GECOMMIT: stap 2 (pipeline.py, app.py) + logs van na 979f451.
+Open voor de volgende sessie:
+  1. Akkoord Ilse op aannames stap 2 (ontbrekende maand -> jaar leeg;
+     0% telt niet als tegengesteld; taxatie geen eigen trechter), dan
+     commit "stap 2".
+  2. Stap 3 samenvoegen: basistabel 42 rijen + coordinaten, 4e trechter.
+  3. Stap 4 berekenen: % stijging 2019->2025, jaarlijkse stijging.
+  4. Waaroms in te vullen: rij 64-67, 69, 71, 72, 74, 80-83.
+  5. Notariaat opvolgen rond 12/11.
+  6. Tekening dashboard (Ilse); grafieken/kaart tegen 17/11; daarna
+     PDF-stap 4 (CLAUDE.md), 5 (GitHub + branch), 6 (pytest), 7 (deploy).
+  7. Vermelden bij beperkingen: Orihuela vraagprijs 45-53% boven
+     taxatie (vermoeden: aanbod vooral Orihuela Costa).
+  8. Claude Code bijwerken (claude update, aparte terminal).
+
+==========================================================================
+SESSIE 2026-11-08
+==========================================================================
+Ilse: "waar zijn we gebleven"
+AI: stand van zaken gelezen uit proces.txt (einde sessie 07/11) en git
+  diff (stap 2 nog niet gecommit: app.py, pipeline.py, proces.txt).
+  Samenvatting gegeven; wacht op akkoord aannames stap 2.
+Ilse: "akkoord met de 3 aannames, maak de commit"
+AI: beslissingslog rij 84 toegevoegd (3 aannames stap 2, aanvaard).
+  Commit "Pijplijn stap 2" met pipeline.py, app.py, proces.txt,
+  beslissingslog.md. Niets gepusht.

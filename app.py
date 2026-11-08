@@ -3,6 +3,8 @@
 Starten:  conda activate syntra-ds   en dan   streamlit run app.py
 Alle rekenwerk zit in pipeline.py; deze app toont enkel wat elke stap doet.
 """
+import altair as alt
+import pandas as pd
 import streamlit as st
 
 import pipeline as pl
@@ -41,6 +43,39 @@ def coordinaten():
     return pl.lees_coordinaten()
 
 
+@st.cache_data(show_spinner="Stap 2 uitvoeren...")
+def stap2():
+    return {
+        "Idealista (vraagprijs)": pl.stappen_idealista(idealista()),
+        "Ministerio (verkopen)": pl.stappen_verkopen(verkopen()),
+        "INE (inwoners)": pl.stappen_inwoners(inwoners()),
+        "Ministerio (taxatie, controle)": pl.stappen_taxatie(taxatie()),
+    }
+
+
+def trechter(stappen, titel):
+    """Horizontale balken: aantal rijen na elke stap (logaritmische as: van 732.600 tot 42 past op één figuur)."""
+    df = pd.DataFrame([{"stap": f"{i + 1}. {s['stap']}", "rijen": s["rijen"], "label": getal(s["rijen"])}
+                       for i, s in enumerate(stappen)])
+    basis = alt.Chart(df, title=titel).encode(
+        y=alt.Y("stap:N", sort=None, title=None),
+        x=alt.X("rijen:Q", scale=alt.Scale(type="log"), title="rijen (log-schaal)"),
+        tooltip=["stap", "label"],
+    )
+    return (basis.mark_bar(color="#2a7f9e") + basis.mark_text(align="left", dx=4).encode(text="label")).properties(height=170)
+
+
+def stappentabel(stappen):
+    """Tabel per stap: rijen erin, eruit, verschil en de reden (opdracht stap 3)."""
+    rijen = []
+    for i, s in enumerate(stappen):
+        voor = stappen[i - 1]["rijen"] if i else None
+        rijen.append({"stap": s["stap"], "rijen in": getal(voor) if voor is not None else "—",
+                      "rijen uit": getal(s["rijen"]),
+                      "verschil": getal(s["rijen"] - voor) if voor is not None else "—", "waarom": s["reden"]})
+    return pd.DataFrame(rijen)
+
+
 # --------------------------------------------------------------------------
 st.title("Woningprijzen Costa Blanca Zuid")
 st.markdown(
@@ -48,7 +83,19 @@ st.markdown(
     "qua vraagprijs per m², aantal verkochte tweedehandswoningen en prijsevolutie tussen 2019 en 2025? "
     "*(mission_statement_v2.md)*"
 )
-st.info("Pijplijn in opbouw — stap 1 (ophalen) is klaar; stap 2–4 en de rijen-trechters volgen.")
+st.info("Pijplijn in opbouw — stap 1 (ophalen) en stap 2 (controleren en filteren) zijn klaar; "
+        "stap 3 (samenvoegen) en stap 4 (berekenen) volgen.")
+
+# --------------------------------------------------------------------------
+st.header("Rijen-trechters")
+st.caption("Per bron: hoeveel rijen er na elke stap overblijven (rij 76). Elke bron eindigt op "
+           f"{pl.GEMEENTE_JAREN} rijen = 6 gemeentes × 7 jaar. De vierde trechter (samenvoegen) volgt in stap 3. "
+           "Waarom rijen wegvallen: zie de uitklapblokken onder Stap 2.")
+resultaten = stap2()
+kolommen = st.columns(3)
+for kolom, naam in zip(kolommen, ["Idealista (vraagprijs)", "Ministerio (verkopen)", "INE (inwoners)"]):
+    with kolom:
+        st.altair_chart(trechter(resultaten[naam][0], naam), width="stretch")
 
 # --------------------------------------------------------------------------
 st.header("Stap 1 · Ophalen")
@@ -103,3 +150,57 @@ with st.expander(f"INE tabel 2856 — inwoners op 1 januari · {getal(len(df_w))
 with st.expander(f"Wikidata — kaartpunten · {getal(len(df_c))} rijen"):
     st.markdown("- **Bron:** `wikidata_coordinaten.csv`; Elche en Orihuela = kustkern (rij 61–62)")
     st.dataframe(df_c, hide_index=True)
+
+# --------------------------------------------------------------------------
+st.header("Stap 2 · Controleren en filteren")
+st.caption("Per bron van ruwe rijen naar één rij per gemeente per jaar. Ontbrekende waarden worden "
+           "opgelijst, nooit opgevuld (rij 40).")
+
+for naam in ["Idealista (vraagprijs)", "Ministerio (verkopen)", "INE (inwoners)"]:
+    stappen, extra = resultaten[naam]
+    eind = stappen[-1]["data"]
+    with st.expander(f"{naam} · {getal(stappen[0]['rijen'])} → {getal(stappen[-1]['rijen'])} rijen"):
+        st.dataframe(stappentabel(stappen), hide_index=True)
+        ontbrekend = extra["ontbrekend"]
+        if len(ontbrekend):
+            st.warning(f"{len(ontbrekend)} gemeente-jaren zonder waarde (niet opgevuld):")
+            st.dataframe(ontbrekend, hide_index=True)
+        else:
+            st.success(f"Geen ontbrekende gemeente-jaren: alle {pl.GEMEENTE_JAREN} aanwezig.")
+        st.markdown("**Resultaat na de laatste stap** (met gemeentenaam):")
+        st.dataframe(pl.GEMEENTEN[["ine_code", "gemeente"]].merge(eind, on="ine_code"), hide_index=True)
+        if "districten" in extra:
+            st.markdown("**Kustdistricten apart** (enkel vraagprijs, rij 65–67): "
+                        f"{len(extra['districten'])} rijen = 4 districten × 7 jaar")
+            st.dataframe(extra["districten"], hide_index=True)
+        if "kwartalen" in extra:
+            st.markdown(f"**Per kwartaal** voor de coronagrafiek (rij 79, 82): {len(extra['kwartalen'])} rijen "
+                        "= 6 gemeentes × 28 kwartalen")
+            st.dataframe(extra["kwartalen"], hide_index=True)
+
+stappen_t, _ = resultaten["Ministerio (taxatie, controle)"]
+controle = pl.controle_taxatie(resultaten["Idealista (vraagprijs)"][0][-1]["data"], stappen_t[-1]["data"])
+n_tegen = int(controle["tegengesteld"].sum())
+n_vergelijk = int(controle["prijs_verandering_pct"].notna().sum())
+with st.expander(f"Controle: vraagprijs ↔ taxatiewaarde · {n_tegen} tegenstrijdigheden op {n_vergelijk} vergelijkingen"):
+    st.markdown(
+        "- **Waarom:** de taxatiewaarde van het Ministerie dient als controle voor de vraagprijs van Idealista "
+        "(rij 48, 63). Een vraagprijs ligt normaal hoger dan een taxatie, dus een verschil op zich is geen fout.\n"
+        "- **Wat je ziet:** het verschil in % en, per jaar, of beide in **tegengestelde richting** bewegen "
+        "(de ene stijgt, de andere daalt), hoe klein ook (rij 77, 78).\n"
+        "- **Enkel 4 van de 6 gemeentes:** Guardamar del Segura en Pilar de la Horadada hebben minder dan "
+        "25.000 inwoners en dus geen taxatiewaarde → geen controlecijfer."
+    )
+    st.dataframe(stappentabel(stappen_t), hide_index=True)
+    tabel = controle.copy()
+    tabel["tegengesteld"] = tabel["tegengesteld"].map({True: "⚠️ ja", False: ""})
+    st.dataframe(
+        tabel.drop(columns="ine_code"), hide_index=True,
+        column_config={
+            "prijs_m2": st.column_config.NumberColumn("vraagprijs €/m²", format="%.0f"),
+            "taxatie_meer5_m2": st.column_config.NumberColumn("taxatie €/m²", format="%.0f"),
+            "verschil_pct": st.column_config.NumberColumn("verschil %", format="%.1f"),
+            "prijs_verandering_pct": st.column_config.NumberColumn("vraagprijs t.o.v. vorig jaar %", format="%.1f"),
+            "taxatie_verandering_pct": st.column_config.NumberColumn("taxatie t.o.v. vorig jaar %", format="%.1f"),
+        },
+    )
