@@ -1958,3 +1958,64 @@ Ilse: "akkoord met de 3 aannames, maak de commit"
 AI: beslissingslog rij 84 toegevoegd (3 aannames stap 2, aanvaard).
   Commit "Pijplijn stap 2" met pipeline.py, app.py, proces.txt,
   beslissingslog.md. Niets gepusht.
+Ilse: "waarom gaan we de data tot een basistabel samenvoegen?"
+AI: uitleg gegeven (vergelijking met join in Access/SQL; berekeningen
+  over bronnen heen; app leest 1 tabel; controle 42 rijen; leegtes
+  zichtbaar). Geen wijzigingen aan code.
+Ilse: "ja, stel de vragen voor stap 3"
+AI: spec (sectie 3-4), coordinaten en pipeline nagekeken. Vastgesteld:
+  kolommen basistabel liggen vast in spec (incl. taxatiewaarde_m2 ->
+  correctie op eerdere uitleg AI); inwoners: 1/1/2026 bestaat niet ->
+  1/1 van jaar X voor alle jaren (rij 58); voorlopige verkoopcijfers
+  enkel 2026 K2 -> buiten periode. 4 vragen gesteld (markeringen,
+  koppelen vanuit raster, kustdistrictentabel, basistabel bewaren).
+Ilse (vraag 1): geen markering geen_taxatie (leeg vak volstaat),
+  wel taxatie_tegenstrijdig (extra opzoeken) en kaartpunt_kustkern.
+AI: gelezen als b + c; beslissingslog rij 85 (waarom = woorden Ilse).
+  Vragen 2-4 nog open.
+Ilse (vraag 2-4): 2 = raster + left join ("geen inner join want zo
+  gaat data verloren"); 3 = ok; 4 = bewaren ("data ligt vast; later bij
+  een nieuw jaar opnieuw ophalen").
+AI: beslissingslog rij 86-88. Nu: stap 3 bouwen in pipeline.py
+  (raster, koppelen, markeringen, verkopen_per_1000, CSV wegschrijven)
+  en 4e trechter in app.py.
+AI: STAP 3 SAMENVOEGEN gebouwd.
+  - pipeline.py: raster() (42 rijen), koppel() (left join met controle
+    many_to_one: stopt bij dubbele sleutels), stappen_samenvoegen()
+    (trechter: raster -> + vraagprijs -> + verkopen -> + inwoners ->
+    + taxatie -> + controle taxatie -> + coordinaten, telkens 42),
+    verkopen_per_1000, markeringen taxatie_tegenstrijdig en
+    kaartpunt_kustkern, kustdistricten_tabel() (28 rijen), bewaar() en
+    lees_verwerkt(), voer_uit(); "python pipeline.py" schrijft
+    data/verwerkt/basistabel.csv en kustdistricten.csv.
+  - CSV-formaat voor Belgische Excel: ; als scheiding, komma als
+    decimaal, utf-8 met BOM. Bedragen 2 decimalen, coordinaten volledig.
+  - Fout onderweg 1: float_format %.2f rondde ook lat/lon af (38,19 i.p.v.
+    38,1897, ca. 1 km) -> afronden per kolom.
+  - Fout onderweg 2: SyntaxError in app.py (unterminated string literal):
+    "\n" werd bij het wegschrijven een echte regelovergang -> hersteld.
+  - app.py: 4e trechter (samenvoegen) naast de andere 3; sectie stap 3
+    met stappentabel, lege vakken, markeringen, basistabel en
+    kustdistricten. AppTest: 0 fouten.
+  Resultaat: 42 rijen x 12 kolommen; leeg: taxatiewaarde_m2 14 (Guardamar,
+    Pilar); taxatie_tegenstrijdig 3 (Torrevieja 2020, Orihuela 2020,
+    Elche 2021); kaartpunt_kustkern Elche + Orihuela; districten 28, 0 leeg.
+  Aannames AI (gemeld): ine_code als extra kolom in de basistabel;
+    taxatie_tegenstrijdig = False als vergelijken niet kan (Guardamar,
+    Pilar, 2019); CSV in Belgisch Excel-formaat; app rekent stap 3 zelf
+    (leest de CSV nog niet); kwartaaltabellen nog niet bewaard.
+Status: wacht op Ilse (app bekijken, aannames, commit).
+Ilse: "leg me de tweede aanname uit"
+AI: uitleg aanname 2 (taxatie_tegenstrijdig = False als vergelijken niet
+  kan): 3 soorten rijen (vergeleken, 2019, Guardamar/Pilar), verschil
+  "nee" vs "niet te bepalen", keuze False of leeg vak voorgelegd.
+Ilse: "met een leeg vak is de data juister"
+AI: taxatie_tegenstrijdig nu type boolean met leeg vak (<NA>) waar
+  vergelijken niet kan (pipeline.py, enkel stap 3; stap 2 ongewijzigd);
+  uitleg in app aangepast. Controle: True 3, False 21, leeg 18 (= 24
+  vergelijkingen stap 2). CSV opnieuw geschreven, AppTest 0 fouten.
+  Beslissingslog rij 89. Andere aannames (1, 3, 4, 5) nog open.
+Ilse: "ja en commit" (akkoord aannames 1, 3, 4, 5 stap 3)
+AI: beslissingslog rij 90. Commit "Pijplijn stap 3" met pipeline.py,
+  app.py, proces.txt, beslissingslog.md, data/verwerkt/*.csv. Niets
+  gepusht.

@@ -53,6 +53,17 @@ def stap2():
     }
 
 
+@st.cache_data(show_spinner="Stap 3 uitvoeren...")
+def stap3():
+    r = stap2()
+    eind = {naam: stappen[-1]["data"] for naam, (stappen, _) in r.items()}
+    controle = pl.controle_taxatie(eind["Idealista (vraagprijs)"], eind["Ministerio (taxatie, controle)"])
+    stappen, extra = pl.stappen_samenvoegen(
+        eind["Idealista (vraagprijs)"], eind["Ministerio (verkopen)"], eind["INE (inwoners)"],
+        eind["Ministerio (taxatie, controle)"], controle, coordinaten())
+    return stappen, extra["basistabel"], pl.kustdistricten_tabel(r["Idealista (vraagprijs)"][1]["districten"])
+
+
 def trechter(stappen, titel):
     """Horizontale balken: aantal rijen na elke stap (logaritmische as: van 732.600 tot 42 past op één figuur)."""
     df = pd.DataFrame([{"stap": f"{i + 1}. {s['stap']}", "rijen": s["rijen"], "label": getal(s["rijen"])}
@@ -83,19 +94,23 @@ st.markdown(
     "qua vraagprijs per m², aantal verkochte tweedehandswoningen en prijsevolutie tussen 2019 en 2025? "
     "*(mission_statement_v2.md)*"
 )
-st.info("Pijplijn in opbouw — stap 1 (ophalen) en stap 2 (controleren en filteren) zijn klaar; "
-        "stap 3 (samenvoegen) en stap 4 (berekenen) volgen.")
+st.info("Pijplijn in opbouw — stap 1 (ophalen), stap 2 (controleren en filteren) en stap 3 (samenvoegen) "
+        "zijn klaar; stap 4 (berekenen) volgt.")
 
 # --------------------------------------------------------------------------
 st.header("Rijen-trechters")
 st.caption("Per bron: hoeveel rijen er na elke stap overblijven (rij 76). Elke bron eindigt op "
-           f"{pl.GEMEENTE_JAREN} rijen = 6 gemeentes × 7 jaar. De vierde trechter (samenvoegen) volgt in stap 3. "
-           "Waarom rijen wegvallen: zie de uitklapblokken onder Stap 2.")
+           f"{pl.GEMEENTE_JAREN} rijen = 6 gemeentes × 7 jaar. De vierde trechter (samenvoegen) moet constant op "
+           f"{pl.GEMEENTE_JAREN} blijven: daalt of stijgt hij, dan ging er bij het koppelen iets mis (rij 86). "
+           "Waarom rijen wegvallen: zie de uitklapblokken onder Stap 2 en 3.")
 resultaten = stap2()
-kolommen = st.columns(3)
+stappen3, basistabel, districten = stap3()
+kolommen = st.columns(4)
 for kolom, naam in zip(kolommen, ["Idealista (vraagprijs)", "Ministerio (verkopen)", "INE (inwoners)"]):
     with kolom:
         st.altair_chart(trechter(resultaten[naam][0], naam), width="stretch")
+with kolommen[3]:
+    st.altair_chart(trechter(stappen3, "Samenvoegen (basistabel)"), width="stretch")
 
 # --------------------------------------------------------------------------
 st.header("Stap 1 · Ophalen")
@@ -204,3 +219,39 @@ with st.expander(f"Controle: vraagprijs ↔ taxatiewaarde · {n_tegen} tegenstri
             "taxatie_verandering_pct": st.column_config.NumberColumn("taxatie t.o.v. vorig jaar %", format="%.1f"),
         },
     )
+
+# --------------------------------------------------------------------------
+st.header("Stap 3 · Samenvoegen")
+st.caption("Eén basistabel gemeente × jaar. Vertrekpunt is een vast raster van 42 rijen; elke bron wordt eraan "
+           "gehangen met een left join, zodat er nooit een gemeente-jaar stil verdwijnt (rij 86). "
+           "Opgeslagen in data/verwerkt/ met `python pipeline.py` (rij 88).")
+
+leeg = basistabel.isna().sum()
+with st.expander(f"Basistabel · {len(basistabel)} rijen × {basistabel.shape[1]} kolommen", expanded=True):
+    st.dataframe(stappentabel(stappen3), hide_index=True)
+    st.markdown(
+        f"- **Lege vakken:** " + (", ".join(f"`{k}` {v}" for k, v in leeg[leeg > 0].items()) or "geen")
+        + " — taxatie bestaat niet voor Guardamar en Pilar (< 25.000 inwoners); de markering "
+        "`taxatie_tegenstrijdig` is daar en in 2019 (geen vorig jaar) leeg = niet te controleren (rij 89)\n"
+        f"- **Markering `taxatie_tegenstrijdig`:** {int(basistabel['taxatie_tegenstrijdig'].sum())} rijen — "
+        "vraagprijs en taxatie bewegen in tegengestelde richting; extra opzoeken (rij 85)\n"
+        f"- **Markering `kaartpunt_kustkern`:** {basistabel.loc[basistabel['kaartpunt_kustkern'], 'gemeente'].nunique()} "
+        "gemeentes (Elche, Orihuela) — de stip op de kaart staat op de kustkern, niet op het centrum\n"
+        "- **verkopen_per_1000** = aantal verkopen ÷ inwoners op 1/1 van hetzelfde jaar × 1.000 (rij 58)"
+    )
+    st.dataframe(
+        basistabel.drop(columns="ine_code"), hide_index=True,
+        column_config={
+            "jaar": st.column_config.NumberColumn(format="%d"),
+            "prijs_m2": st.column_config.NumberColumn("vraagprijs €/m²", format="%.0f"),
+            "verkopen_per_1000": st.column_config.NumberColumn("verkopen per 1.000 inw.", format="%.1f"),
+            "taxatiewaarde_m2": st.column_config.NumberColumn("taxatie €/m²", format="%.0f"),
+        },
+    )
+
+with st.expander(f"Kustdistricten apart · {len(districten)} rijen (enkel vraagprijs, rij 87)"):
+    st.markdown("4 districten × 7 jaar. Geen verkopen of inwoners per district; coördinaten beslissen we bij het "
+                "dashboard (rij 65).")
+    st.dataframe(districten, hide_index=True,
+                 column_config={"jaar": st.column_config.NumberColumn(format="%d"),
+                                "prijs_m2": st.column_config.NumberColumn("vraagprijs €/m²", format="%.0f")})

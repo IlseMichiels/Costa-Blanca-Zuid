@@ -5,9 +5,11 @@ binnen en geeft een DataFrame terug. app.py toont het resultaat van elke stap.
 Rijnummers (rij ..) verwijzen naar beslissingslog.md.
 
 Stap 1 OPHALEN    lees_idealista, lees_verkopen, lees_taxatie, lees_inwoners, lees_coordinaten
-Stap 2 CONTROLEREN (volgt)
-Stap 3 SAMENVOEGEN (volgt)
+Stap 2 CONTROLEREN stappen_idealista, stappen_verkopen, stappen_inwoners, stappen_taxatie, controle_taxatie
+Stap 3 SAMENVOEGEN stappen_samenvoegen, kustdistricten_tabel, bewaar
 Stap 4 BEREKENEN  (volgt)
+
+Alles in één keer uitvoeren en de CSV's van stap 3 wegschrijven:  python pipeline.py
 """
 import re
 from pathlib import Path
@@ -15,6 +17,7 @@ from pathlib import Path
 import pandas as pd
 
 RUW = Path(__file__).parent / "data" / "ruw"
+VERWERKT = Path(__file__).parent / "data" / "verwerkt"   # resultaat stap 3 (rij 88)
 
 # --------------------------------------------------------------------------
 # Vaste gegevens
@@ -330,3 +333,111 @@ def controle_taxatie(prijs_jaar, taxatie_jaar):
     df["taxatie_verandering_pct"] = groep["taxatie_meer5_m2"].pct_change() * 100
     df["tegengesteld"] = (df["prijs_verandering_pct"] * df["taxatie_verandering_pct"]) < 0
     return GEMEENTEN[["ine_code", "gemeente"]].merge(df, on="ine_code")
+
+
+# --------------------------------------------------------------------------
+# Stap 3 SAMENVOEGEN — één basistabel gemeente × jaar (42 rijen) + kustdistricten apart
+# --------------------------------------------------------------------------
+
+def raster():
+    """Alle 42 combinaties gemeente × jaar: het vaste vertrekpunt van stap 3 (rij 86)."""
+    jaren = pd.DataFrame({"jaar": range(PERIODE[0], PERIODE[1] + 1)})
+    return GEMEENTEN[["ine_code", "gemeente"]].merge(jaren, how="cross")
+
+
+def koppel(basis, bron, kolommen, sleutels=("ine_code", "jaar")):
+    """Left join (rij 86): alle rijen van basis blijven; geen cijfer in de bron -> leeg vak.
+
+    validate='many_to_one' stopt de pijplijn als een bron dubbele sleutels heeft
+    (dan zou het aantal rijen stil stijgen boven 42).
+    """
+    return basis.merge(bron[[*sleutels, *kolommen]], on=list(sleutels), how="left", validate="many_to_one")
+
+
+def stappen_samenvoegen(prijs_jaar, verkopen_jaar, inwoners_jaar, taxatie_jaar, controle, coordinaten):
+    """Trechter samenvoegen: raster van 42 rijen + elke bron eraan (left join) -> basistabel.
+
+    Kolommen: ine_code | gemeente | jaar | prijs_m2 | aantal_verkopen | inwoners | verkopen_per_1000 |
+    taxatiewaarde_m2 | lat | lon | taxatie_tegenstrijdig | kaartpunt_kustkern  (spec stap 3, rij 85).
+    """
+    s = []
+    taxatie = taxatie_jaar.rename(columns={"taxatie_meer5_m2": "taxatiewaarde_m2"})
+    # Tegenstrijdig enkel waar vergelijken kan; geen vorig jaar (2019) -> leeg vak (<NA>), niet False (rij 89)
+    niet_te_vergelijken = controle[["prijs_verandering_pct", "taxatie_verandering_pct"]].isna().any(axis=1)
+    controle = controle.assign(
+        taxatie_tegenstrijdig=controle["tegengesteld"].astype("boolean").mask(niet_te_vergelijken))
+    coord = coordinaten.assign(kaartpunt_kustkern=coordinaten["kaartpunt"].str.contains("kustkern"))
+
+    df = _stap(s, "raster", "6 gemeentes × 7 jaar (rij 86)", raster())
+    df = _stap(s, "+ vraagprijs", "Idealista, jaargemiddelde (rij 70)", koppel(df, prijs_jaar, ["prijs_m2"]))
+    df = _stap(s, "+ verkopen", "Ministerio, jaarsom", koppel(df, verkopen_jaar, ["aantal_verkopen"]))
+    df = _stap(s, "+ inwoners", "INE, telling 1/1 van hetzelfde jaar (rij 58)", koppel(df, inwoners_jaar, ["inwoners"]))
+    df = _stap(s, "+ taxatie", "Ministerio, enkel 4 gemeentes; Guardamar en Pilar leeg (rij 80)",
+               koppel(df, taxatie, ["taxatiewaarde_m2"]))
+    df = _stap(s, "+ controle taxatie", "markering tegengestelde richting (rij 78, 85)",
+               koppel(df, controle, ["taxatie_tegenstrijdig"]))
+    df = _stap(s, "+ coördinaten", "Wikidata, 1 kaartpunt per gemeente (rij 61-62, 85)",
+               koppel(df, coord, ["lat", "lon", "kaartpunt_kustkern"], sleutels=("ine_code",)))
+
+    df["aantal_verkopen"] = df["aantal_verkopen"].astype("Int64")      # gehele getallen, leeg blijft mogelijk
+    df["inwoners"] = df["inwoners"].astype("Int64")
+    df["verkopen_per_1000"] = df["aantal_verkopen"] / df["inwoners"] * 1000
+    # Guardamar en Pilar (geen taxatie) komen niet voor in de controle -> na de left join ook leeg (rij 89)
+    df["taxatie_tegenstrijdig"] = df["taxatie_tegenstrijdig"].astype("boolean")
+    volgorde = ["ine_code", "gemeente", "jaar", "prijs_m2", "aantal_verkopen", "inwoners", "verkopen_per_1000",
+                "taxatiewaarde_m2", "lat", "lon", "taxatie_tegenstrijdig", "kaartpunt_kustkern"]
+    df = df[volgorde]
+    if len(df) != GEMEENTE_JAREN:
+        raise ValueError(f"Basistabel heeft {len(df)} rijen in plaats van {GEMEENTE_JAREN}")
+    return s, {"basistabel": df}
+
+
+def kustdistricten_tabel(districten_jaar):
+    """Kustdistricten apart, enkel vraagprijs (rij 87): district | gemeente | jaar | prijs_m2 (28 rijen)."""
+    df = districten_jaar.merge(GEMEENTEN[["ine_code", "gemeente"]], on="ine_code", how="left")
+    df = df.rename(columns={"kustdistrict": "district"})
+    return df[["district", "gemeente", "jaar", "prijs_m2"]].sort_values(["gemeente", "district", "jaar"]).reset_index(drop=True)
+
+
+def bewaar(basistabel, districten, map_uit=VERWERKT):
+    """Schrijft het resultaat van stap 3 weg (rij 88).
+
+    Formaat voor een Belgische Excel: puntkomma als scheidingsteken, komma als decimaalteken,
+    utf-8 met BOM (zodat Excel de tekens juist toont). Terug inlezen: lees_verwerkt().
+    """
+    map_uit = Path(map_uit)
+    map_uit.mkdir(parents=True, exist_ok=True)
+    opties = {"sep": ";", "decimal": ",", "index": False, "encoding": "utf-8-sig"}
+    # bedragen en verhoudingen op 2 decimalen; coördinaten (lat, lon) blijven volledig (4 decimalen)
+    afronden = {"prijs_m2": 2, "verkopen_per_1000": 2, "taxatiewaarde_m2": 2}
+    basistabel.round(afronden).to_csv(map_uit / "basistabel.csv", **opties)
+    districten.round(afronden).to_csv(map_uit / "kustdistricten.csv", **opties)
+    return [map_uit / "basistabel.csv", map_uit / "kustdistricten.csv"]
+
+
+def lees_verwerkt(naam, map_in=VERWERKT):
+    """Leest een CSV uit data/verwerkt terug in (zelfde formaat als bewaar)."""
+    return pd.read_csv(Path(map_in) / naam, sep=";", decimal=",", encoding="utf-8-sig", dtype={"ine_code": str})
+
+
+def voer_uit():
+    """Volledige pijplijn stap 1-3 zonder app; geeft alle tussenresultaten terug."""
+    stap2 = {
+        "idealista": stappen_idealista(lees_idealista()),
+        "verkopen": stappen_verkopen(lees_verkopen()),
+        "inwoners": stappen_inwoners(lees_inwoners()),
+        "taxatie": stappen_taxatie(lees_taxatie()),
+    }
+    eind = {naam: stappen[-1]["data"] for naam, (stappen, _) in stap2.items()}
+    controle = controle_taxatie(eind["idealista"], eind["taxatie"])
+    stap3 = stappen_samenvoegen(eind["idealista"], eind["verkopen"], eind["inwoners"], eind["taxatie"],
+                                controle, lees_coordinaten())
+    districten = kustdistricten_tabel(stap2["idealista"][1]["districten"])
+    return stap2, controle, stap3, districten
+
+
+if __name__ == "__main__":
+    _, _, (stappen3, extra3), districten = voer_uit()
+    for pad in bewaar(extra3["basistabel"], districten):
+        print("geschreven:", pad)
+    print(extra3["basistabel"].to_string())
