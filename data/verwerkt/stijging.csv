@@ -1,0 +1,11 @@
+﻿soort;gemeente;district;prijs_m2_2019;prijs_m2_2025;prijs_m2_stijging_pct;aantal_verkopen_2019;aantal_verkopen_2025;aantal_verkopen_stijging_pct;verkopen_per_1000_2019;verkopen_per_1000_2025;verkopen_per_1000_stijging_pct
+gemeente;Santa Pola;;1452,33;2347,83;61,66;1273;1661;30,48;39,4;41,83;6,15
+gemeente;Elche;;1096,42;1690,5;54,18;2516;3233;28,5;10,82;13,17;21,67
+gemeente;Guardamar del Segura;;1540,25;2314,5;50,27;606;1082;78,55;39,48;58,28;47,62
+gemeente;Torrevieja;;1413,75;2266,17;60,29;4485;6154;37,21;53,82;62,46;16,05
+gemeente;Orihuela;;1719,5;2610,17;51,8;2895;4188;44,66;37,4;49,53;32,44
+gemeente;Pilar de la Horadada;;1700,75;3053,08;79,51;576;1012;75,69;26,3;41,62;58,27
+kustdistrict;Elche;Arenales del Sol;1808,83;3149,92;74,14;;;;;;
+kustdistrict;Elche;El Altet – Balsares;1106,42;1823,92;64,85;;;;;;
+kustdistrict;Elche;La Marina;1527,08;2253,33;47,56;;;;;;
+kustdistrict;Orihuela;Orihuela Costa;1882,25;2808,92;49,23;;;;;;

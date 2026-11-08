@@ -2081,3 +2081,46 @@ Status: wacht op Ilse (El Altet bevestigen, commit).
 Ilse: "ja akkoord met El Altet, maak de commit"
 AI: rij 93 bijgewerkt (El Altet aanvaard). Commit "Kaartpunten: gemeentes
   naar centrum, eigen stip per kustdistrict". Niets gepusht.
+Ilse: "we gaan verder" (stap 4 berekenen)
+AI: spec, mission statement en beslissingslog doorzocht op stap 4.
+AI: vastgesteld: rij 22 = totale stijging 2019->2025 + jaarlijkse
+  stijging "versnelt of vlakt af" (= jaar op jaar); geen rangnummers
+  (rij 38). Voorbeeldcijfers berekend; 4 vragen stap 4 gesteld.
+Ilse: "beiden. Ik wil ook weten hoe in trek een gemeente is"
+AI: gelezen als vraag 1 = c (absoluut + per 1000); beslissingslog
+  rij 94. Vragen 2-4 nog open.
+Ilse: "2 leg nog even uit. 3 a kust is belangrijk. 4 extra kolommen
+  houden het overzichtelijk"
+AI: rij 95 (vraag 3a). Vraag 2: uitleg met echte cijfers (Pilar prijs,
+  Santa Pola prijs, Torrevieja verkopen). Vraag 4: antwoord dubbelzinnig
+  -> verduidelijking gevraagd.
+Ilse: "2 jaar op jaar toont het effect van corona. 4a want herhaling van
+  cijfers maakt het onoverzichtelijk"
+AI: beslissingslog rij 96-97. Nu: stap 4 bouwen (pipeline.py: jaar op
+  jaar + stijging 2019-2025, stijging.csv; app.py: sectie stap 4).
+AI: STAP 4 BEREKENEN gebouwd.
+  - pipeline.py: jaar_op_jaar() (% t.o.v. vorig jaar, 2019 leeg, enkel als
+    vorig jaar echt het jaar ervoor is), stijging_periode() (2019 -> 2025),
+    stap4_basistabel() (+3 kolommen: prijs_m2_jaar_pct,
+    aantal_verkopen_jaar_pct, verkopen_per_1000_jaar_pct),
+    stap4_districten() (+ prijs_m2_jaar_pct), stijging_tabel() (10 rijen:
+    6 gemeentes + 4 districten; met waarde 2019, 2025 en % stijging).
+    bewaar() schrijft nu een dict van tabellen; + stijging.csv.
+  - Controle: kolommen van stap 3 identiek aan vorige commit; tweede
+    berekening jaar op jaar: 0 afwijkingen op de volledige waarden (5
+    kleine afwijkingen <= 0,05 procentpunt enkel bij narekenen op de
+    afgeronde CSV-waarden van verkopen_per_1000 -> afronding, geen fout).
+    Lege vakken: enkel 2019 (geen vorig jaar).
+  - Resultaat stijging prijs 2019->2025: Pilar +79,5, Santa Pola +61,7,
+    Torrevieja +60,3, Elche +54,2, Orihuela +51,8, Guardamar +50,3;
+    districten: Arenales +74,1, El Altet +64,8, Orihuela Costa +49,2,
+    La Marina +47,6. Verkopen per 1000: Pilar +58,3 ... Santa Pola +6,2.
+  - app.py: sectie "Stap 4 · Berekenen" (stijgingstabel + jaar op jaar);
+    info bovenaan: pijplijn klaar. AppTest 0 fouten.
+  Aannames AI (gemeld): jaar op jaar ook voor de districten (prijs);
+    stijgingstabel bevat ook de waarden 2019 en 2025 (controleerbaar);
+    afronding enkel bij wegschrijven (2 decimalen).
+Status: wacht op Ilse (app bekijken, aannames, commit).
+Ilse: "akkoord met de aannames, maak de commit"
+AI: beslissingslog rij 98 (aannames stap 4). Commit "Pijplijn stap 4".
+  Niets gepusht. Pijplijn (PDF-stap 3) volledig.

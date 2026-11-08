@@ -1,29 +1,29 @@
-﻿district;gemeente;jaar;prijs_m2;lat;lon
-Arenales del Sol;Elche;2019;1808,83;38,2531;-0,5214
-Arenales del Sol;Elche;2020;1841,33;38,2531;-0,5214
-Arenales del Sol;Elche;2021;1852,33;38,2531;-0,5214
-Arenales del Sol;Elche;2022;2019,58;38,2531;-0,5214
-Arenales del Sol;Elche;2023;2177,17;38,2531;-0,5214
-Arenales del Sol;Elche;2024;2620,42;38,2531;-0,5214
-Arenales del Sol;Elche;2025;3149,92;38,2531;-0,5214
-El Altet – Balsares;Elche;2019;1106,42;38,2731;-0,5392
-El Altet – Balsares;Elche;2020;1116,33;38,2731;-0,5392
-El Altet – Balsares;Elche;2021;1092,17;38,2731;-0,5392
-El Altet – Balsares;Elche;2022;1088,5;38,2731;-0,5392
-El Altet – Balsares;Elche;2023;1165,0;38,2731;-0,5392
-El Altet – Balsares;Elche;2024;1414,33;38,2731;-0,5392
-El Altet – Balsares;Elche;2025;1823,92;38,2731;-0,5392
-La Marina;Elche;2019;1527,08;38,1464;-0,6454
-La Marina;Elche;2020;1483,92;38,1464;-0,6454
-La Marina;Elche;2021;1574,58;38,1464;-0,6454
-La Marina;Elche;2022;1792,67;38,1464;-0,6454
-La Marina;Elche;2023;1946,17;38,1464;-0,6454
-La Marina;Elche;2024;2067,42;38,1464;-0,6454
-La Marina;Elche;2025;2253,33;38,1464;-0,6454
-Orihuela Costa;Orihuela;2019;1882,25;37,9004;-0,7535
-Orihuela Costa;Orihuela;2020;1910,83;37,9004;-0,7535
-Orihuela Costa;Orihuela;2021;1906,0;37,9004;-0,7535
-Orihuela Costa;Orihuela;2022;2125,33;37,9004;-0,7535
-Orihuela Costa;Orihuela;2023;2285,75;37,9004;-0,7535
-Orihuela Costa;Orihuela;2024;2484,83;37,9004;-0,7535
-Orihuela Costa;Orihuela;2025;2808,92;37,9004;-0,7535
+﻿district;gemeente;jaar;prijs_m2;lat;lon;prijs_m2_jaar_pct
+Arenales del Sol;Elche;2019;1808,83;38,2531;-0,5214;
+Arenales del Sol;Elche;2020;1841,33;38,2531;-0,5214;1,8
+Arenales del Sol;Elche;2021;1852,33;38,2531;-0,5214;0,6
+Arenales del Sol;Elche;2022;2019,58;38,2531;-0,5214;9,03
+Arenales del Sol;Elche;2023;2177,17;38,2531;-0,5214;7,8
+Arenales del Sol;Elche;2024;2620,42;38,2531;-0,5214;20,36
+Arenales del Sol;Elche;2025;3149,92;38,2531;-0,5214;20,21
+El Altet – Balsares;Elche;2019;1106,42;38,2731;-0,5392;
+El Altet – Balsares;Elche;2020;1116,33;38,2731;-0,5392;0,9
+El Altet – Balsares;Elche;2021;1092,17;38,2731;-0,5392;-2,16
+El Altet – Balsares;Elche;2022;1088,5;38,2731;-0,5392;-0,34
+El Altet – Balsares;Elche;2023;1165,0;38,2731;-0,5392;7,03
+El Altet – Balsares;Elche;2024;1414,33;38,2731;-0,5392;21,4
+El Altet – Balsares;Elche;2025;1823,92;38,2731;-0,5392;28,96
+La Marina;Elche;2019;1527,08;38,1464;-0,6454;
+La Marina;Elche;2020;1483,92;38,1464;-0,6454;-2,83
+La Marina;Elche;2021;1574,58;38,1464;-0,6454;6,11
+La Marina;Elche;2022;1792,67;38,1464;-0,6454;13,85
+La Marina;Elche;2023;1946,17;38,1464;-0,6454;8,56
+La Marina;Elche;2024;2067,42;38,1464;-0,6454;6,23
+La Marina;Elche;2025;2253,33;38,1464;-0,6454;8,99
+Orihuela Costa;Orihuela;2019;1882,25;37,9004;-0,7535;
+Orihuela Costa;Orihuela;2020;1910,83;37,9004;-0,7535;1,52
+Orihuela Costa;Orihuela;2021;1906,0;37,9004;-0,7535;-0,25
+Orihuela Costa;Orihuela;2022;2125,33;37,9004;-0,7535;11,51
+Orihuela Costa;Orihuela;2023;2285,75;37,9004;-0,7535;7,55
+Orihuela Costa;Orihuela;2024;2484,83;37,9004;-0,7535;8,71
+Orihuela Costa;Orihuela;2025;2808,92;37,9004;-0,7535;13,04

@@ -65,6 +65,14 @@ def stap3():
                                                                   coordinaten())
 
 
+@st.cache_data(show_spinner="Stap 4 uitvoeren...")
+def stap4():
+    _, basistabel, districten = stap3()
+    basistabel4 = pl.stap4_basistabel(basistabel)
+    districten4 = pl.stap4_districten(districten)
+    return basistabel4, districten4, pl.stijging_tabel(basistabel4, districten4)
+
+
 def trechter(stappen, titel):
     """Horizontale balken: aantal rijen na elke stap (logaritmische as: van 732.600 tot 42 past op één figuur)."""
     df = pd.DataFrame([{"stap": f"{i + 1}. {s['stap']}", "rijen": s["rijen"], "label": getal(s["rijen"])}
@@ -95,8 +103,8 @@ st.markdown(
     "qua vraagprijs per m², aantal verkochte tweedehandswoningen en prijsevolutie tussen 2019 en 2025? "
     "*(mission_statement_v2.md)*"
 )
-st.info("Pijplijn in opbouw — stap 1 (ophalen), stap 2 (controleren en filteren) en stap 3 (samenvoegen) "
-        "zijn klaar; stap 4 (berekenen) volgt.")
+st.info("Pijplijn klaar — stap 1 (ophalen), stap 2 (controleren en filteren), stap 3 (samenvoegen) en "
+        "stap 4 (berekenen). Het dashboard (grafieken, kaart, conclusies) volgt.")
 
 # --------------------------------------------------------------------------
 st.header("Rijen-trechters")
@@ -256,3 +264,61 @@ with st.expander(f"Kustdistricten apart · {len(districten)} rijen (enkel vraagp
     st.dataframe(districten, hide_index=True,
                  column_config={"jaar": st.column_config.NumberColumn(format="%d"),
                                 "prijs_m2": st.column_config.NumberColumn("vraagprijs €/m²", format="%.0f")})
+
+# --------------------------------------------------------------------------
+st.header("Stap 4 · Berekenen")
+st.caption("Stijging jaar op jaar (rij 96) en van 2019 naar 2025 (rij 22), voor de vraagprijs, het aantal verkopen "
+           "en de verkopen per 1.000 inwoners (rij 94); voor de kustdistricten enkel de vraagprijs (rij 95). "
+           "Ontbreekt een waarde, dan blijft de stijging leeg (rij 40). Opgeslagen in data/verwerkt/ (rij 97).")
+
+basistabel4, districten4, stijging = stap4()
+
+with st.expander(f"Stijging 2019 → 2025 · {len(stijging)} rijen (6 gemeentes + 4 kustdistricten)", expanded=True):
+    st.markdown(
+        "- **Formule:** (waarde 2025 ÷ waarde 2019 − 1) × 100\n"
+        "- **Per 1.000 inwoners** corrigeert voor de bevolkingsgroei: hoe *in trek* is een gemeente, los van haar groei (rij 94)\n"
+        "- **Kustdistricten:** enkel vraagprijs; verkopen en inwoners bestaan niet per district"
+    )
+    st.dataframe(
+        stijging, hide_index=True,
+        column_config={
+            "prijs_m2_2019": st.column_config.NumberColumn("prijs 2019 €/m²", format="%.0f"),
+            "prijs_m2_2025": st.column_config.NumberColumn("prijs 2025 €/m²", format="%.0f"),
+            "prijs_m2_stijging_pct": st.column_config.NumberColumn("prijs stijging", format="%+.1f %%"),
+            "aantal_verkopen_2019": st.column_config.NumberColumn("verkopen 2019", format="%d"),
+            "aantal_verkopen_2025": st.column_config.NumberColumn("verkopen 2025", format="%d"),
+            "aantal_verkopen_stijging_pct": st.column_config.NumberColumn("verkopen stijging", format="%+.1f %%"),
+            "verkopen_per_1000_2019": st.column_config.NumberColumn("per 1.000 inw. 2019", format="%.1f"),
+            "verkopen_per_1000_2025": st.column_config.NumberColumn("per 1.000 inw. 2025", format="%.1f"),
+            "verkopen_per_1000_stijging_pct": st.column_config.NumberColumn("per 1.000 inw. stijging", format="%+.1f %%"),
+        },
+    )
+
+with st.expander("Jaar op jaar · extra kolommen in de basistabel (42 rijen) en de kustdistricten (28 rijen)"):
+    st.markdown(
+        "- **Formule:** (waarde dit jaar ÷ waarde vorig jaar − 1) × 100; 2019 is leeg (geen vorig jaar)\n"
+        "- Toont of de stijging versnelt of afvlakt, en het effect van corona (rij 22, 96)"
+    )
+    st.dataframe(
+        basistabel4[["gemeente", "jaar", "prijs_m2", "prijs_m2_jaar_pct", "aantal_verkopen", "aantal_verkopen_jaar_pct",
+                     "verkopen_per_1000", "verkopen_per_1000_jaar_pct"]],
+        hide_index=True,
+        column_config={
+            "jaar": st.column_config.NumberColumn(format="%d"),
+            "prijs_m2": st.column_config.NumberColumn("prijs €/m²", format="%.0f"),
+            "prijs_m2_jaar_pct": st.column_config.NumberColumn("prijs t.o.v. vorig jaar", format="%+.1f %%"),
+            "aantal_verkopen": st.column_config.NumberColumn("verkopen", format="%d"),
+            "aantal_verkopen_jaar_pct": st.column_config.NumberColumn("verkopen t.o.v. vorig jaar", format="%+.1f %%"),
+            "verkopen_per_1000": st.column_config.NumberColumn("per 1.000 inw.", format="%.1f"),
+            "verkopen_per_1000_jaar_pct": st.column_config.NumberColumn("per 1.000 t.o.v. vorig jaar", format="%+.1f %%"),
+        },
+    )
+    st.markdown("**Kustdistricten** (enkel vraagprijs):")
+    st.dataframe(
+        districten4[["district", "gemeente", "jaar", "prijs_m2", "prijs_m2_jaar_pct"]], hide_index=True,
+        column_config={
+            "jaar": st.column_config.NumberColumn(format="%d"),
+            "prijs_m2": st.column_config.NumberColumn("prijs €/m²", format="%.0f"),
+            "prijs_m2_jaar_pct": st.column_config.NumberColumn("prijs t.o.v. vorig jaar", format="%+.1f %%"),
+        },
+    )

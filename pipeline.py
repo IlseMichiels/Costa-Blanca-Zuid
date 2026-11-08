@@ -7,9 +7,9 @@ Rijnummers (rij ..) verwijzen naar beslissingslog.md.
 Stap 1 OPHALEN    lees_idealista, lees_verkopen, lees_taxatie, lees_inwoners, lees_coordinaten
 Stap 2 CONTROLEREN stappen_idealista, stappen_verkopen, stappen_inwoners, stappen_taxatie, controle_taxatie
 Stap 3 SAMENVOEGEN stappen_samenvoegen, kustdistricten_tabel, bewaar
-Stap 4 BEREKENEN  (volgt)
+Stap 4 BEREKENEN  jaar_op_jaar, stijging_periode, stap4_basistabel, stap4_districten, stijging_tabel
 
-Alles in één keer uitvoeren en de CSV's van stap 3 wegschrijven:  python pipeline.py
+Alles in één keer uitvoeren en de CSV's wegschrijven (data/verwerkt):  python pipeline.py
 """
 import re
 from pathlib import Path
@@ -402,8 +402,8 @@ def kustdistricten_tabel(districten_jaar, coordinaten):
     return df[cols].sort_values(["gemeente", "district", "jaar"]).reset_index(drop=True)
 
 
-def bewaar(basistabel, districten, map_uit=VERWERKT):
-    """Schrijft het resultaat van stap 3 weg (rij 88).
+def bewaar(tabellen, map_uit=VERWERKT):
+    """Schrijft de resultaten weg (rij 88, 97): tabellen = {"basistabel": df, ...} -> <naam>.csv.
 
     Formaat voor een Belgische Excel: puntkomma als scheidingsteken, komma als decimaalteken,
     utf-8 met BOM (zodat Excel de tekens juist toont). Terug inlezen: lees_verwerkt().
@@ -412,10 +412,15 @@ def bewaar(basistabel, districten, map_uit=VERWERKT):
     map_uit.mkdir(parents=True, exist_ok=True)
     opties = {"sep": ";", "decimal": ",", "index": False, "encoding": "utf-8-sig"}
     # bedragen en verhoudingen op 2 decimalen; coördinaten (lat, lon) blijven volledig (4 decimalen)
-    afronden = {"prijs_m2": 2, "verkopen_per_1000": 2, "taxatiewaarde_m2": 2}
-    basistabel.round(afronden).to_csv(map_uit / "basistabel.csv", **opties)
-    districten.round(afronden).to_csv(map_uit / "kustdistricten.csv", **opties)
-    return [map_uit / "basistabel.csv", map_uit / "kustdistricten.csv"]
+    paden = []
+    for naam, df in tabellen.items():
+        # bedragen, verhoudingen en percentages op 2 decimalen; coördinaten (lat, lon) blijven volledig
+        afronden = {k: 2 for k in df.columns if k.startswith(("prijs", "verkopen_per_1000", "taxatie"))
+                    or k.endswith("_pct")}
+        pad = map_uit / f"{naam}.csv"
+        df.round(afronden).to_csv(pad, **opties)
+        paden.append(pad)
+    return paden
 
 
 def lees_verwerkt(naam, map_in=VERWERKT):
@@ -437,11 +442,83 @@ def voer_uit():
     stap3 = stappen_samenvoegen(eind["idealista"], eind["verkopen"], eind["inwoners"], eind["taxatie"],
                                 controle, coordinaten)
     districten = kustdistricten_tabel(stap2["idealista"][1]["districten"], coordinaten)
-    return stap2, controle, stap3, districten
+    basistabel4 = stap4_basistabel(stap3[1]["basistabel"])
+    districten4 = stap4_districten(districten)
+    stijging = stijging_tabel(basistabel4, districten4)
+    return stap2, controle, stap3, {"basistabel": basistabel4, "kustdistricten": districten4, "stijging": stijging}
+
+
+# --------------------------------------------------------------------------
+# Stap 4 BEREKENEN — stijging jaar op jaar (rij 96) en 2019 -> 2025 (rij 22, 94-97)
+# --------------------------------------------------------------------------
+# Ontbreekt een waarde, dan blijft de stijging leeg: niets opvullen (rij 40).
+
+def jaar_op_jaar(df, kolom, groep):
+    """% verandering t.o.v. het jaar ervoor, per gebied; het eerste jaar (2019) blijft leeg (rij 96).
+
+    Voorbeeld: 1.452 (2019) -> 1.483 (2020) geeft (1.483 / 1.452 - 1) x 100 = +2,1 %.
+    """
+    df = df.sort_values([groep, "jaar"])
+    vorige = df.groupby(groep)[kolom].shift(1)            # waarde van het jaar ervoor, binnen hetzelfde gebied
+    vorig_jaar = df.groupby(groep)["jaar"].shift(1)
+    pct = (df[kolom] / vorige - 1) * 100
+    return pct.where(vorig_jaar == df["jaar"] - 1)        # enkel als het vorige jaar echt het jaar ervoor is
+
+
+def stijging_periode(df, kolom, groep, van=PERIODE[0], tot=PERIODE[1]):
+    """% stijging van het jaar van tot het jaar tot, per gebied: (waarde tot / waarde van - 1) x 100.
+
+    Geeft een tabel: groep | <kolom>_<van> | <kolom>_<tot> | <kolom>_stijging_pct.
+    """
+    breed = df[df["jaar"].isin([van, tot])].pivot(index=groep, columns="jaar", values=kolom)
+    uit = pd.DataFrame({
+        f"{kolom}_{van}": breed.get(van),
+        f"{kolom}_{tot}": breed.get(tot),
+    })
+    uit[f"{kolom}_stijging_pct"] = (uit[f"{kolom}_{tot}"] / uit[f"{kolom}_{van}"] - 1) * 100
+    return uit.reset_index()
+
+
+def stap4_basistabel(basistabel):
+    """Basistabel + 3 kolommen jaar op jaar (rij 94, 96, 97): prijs, verkopen absoluut en per 1.000 inwoners."""
+    df = basistabel.sort_values(["ine_code", "jaar"]).copy()
+    for kolom in ["prijs_m2", "aantal_verkopen", "verkopen_per_1000"]:
+        df[f"{kolom}_jaar_pct"] = jaar_op_jaar(df.astype({kolom: "float"}), kolom, "ine_code")
+    # zelfde volgorde van de gemeentes als in stap 3
+    return df.set_index(["ine_code", "jaar"]).loc[basistabel.set_index(["ine_code", "jaar"]).index].reset_index()[
+        [*basistabel.columns, "prijs_m2_jaar_pct", "aantal_verkopen_jaar_pct", "verkopen_per_1000_jaar_pct"]]
+
+
+def stap4_districten(districten):
+    """Kustdistricten + prijs jaar op jaar (rij 95, 96)."""
+    df = districten.copy()
+    df["prijs_m2_jaar_pct"] = jaar_op_jaar(df, "prijs_m2", "district")
+    return df.sort_values(["gemeente", "district", "jaar"]).reset_index(drop=True)
+
+
+def stijging_tabel(basistabel, districten):
+    """Stijging 2019 -> 2025: 1 rij per gemeente (6) en per kustdistrict (4) = 10 rijen (rij 95, 97).
+
+    Gemeentes: prijs, aantal verkopen en verkopen per 1.000 inwoners (rij 94). Districten: enkel prijs.
+    Kolommen: soort | gemeente | district | <maatstaf>_2019 | <maatstaf>_2025 | <maatstaf>_stijging_pct.
+    """
+    delen = [stijging_periode(basistabel, k, "gemeente") for k in ["prijs_m2", "aantal_verkopen", "verkopen_per_1000"]]
+    gemeentes = delen[0].merge(delen[1], on="gemeente", validate="one_to_one").merge(delen[2], on="gemeente",
+                                                                                     validate="one_to_one")
+    gemeentes.insert(0, "soort", "gemeente")
+    gemeentes.insert(2, "district", pd.NA)
+    gemeentes = GEMEENTEN[["gemeente"]].merge(gemeentes, on="gemeente")    # vaste volgorde van de gemeentes
+
+    dist = stijging_periode(districten, "prijs_m2", "district")
+    dist = dist.merge(districten[["district", "gemeente"]].drop_duplicates(), on="district", validate="one_to_one")
+    dist.insert(0, "soort", "kustdistrict")
+    uit = pd.concat([gemeentes, dist], ignore_index=True)
+    return uit[["soort", "gemeente", "district", *[k for k in gemeentes.columns if k not in ("soort", "gemeente", "district")]]]
 
 
 if __name__ == "__main__":
-    _, _, (stappen3, extra3), districten = voer_uit()
-    for pad in bewaar(extra3["basistabel"], districten):
+    _, _, _, tabellen = voer_uit()
+    for pad in bewaar(tabellen):
         print("geschreven:", pad)
-    print(extra3["basistabel"].to_string())
+    with pd.option_context("display.width", 250, "display.max_columns", 20):
+        print(tabellen["stijging"].round(1).to_string())
