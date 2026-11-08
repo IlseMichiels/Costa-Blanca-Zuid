@@ -2124,3 +2124,47 @@ Status: wacht op Ilse (app bekijken, aannames, commit).
 Ilse: "akkoord met de aannames, maak de commit"
 AI: beslissingslog rij 98 (aannames stap 4). Commit "Pijplijn stap 4".
   Niets gepusht. Pijplijn (PDF-stap 3) volledig.
+Ilse: "Costa Blanca Zuid -proces.docx mag ook niet in de git komen" /
+  "jawel, deze wel. Het is ... -proces.docx die niet in git mag"
+AI: gecontroleerd: docx genegeerd (.gitignore regel 3) en nooit
+  gecommit. ~WRL0005.tmp = tijdelijke Word-kopie (begint met PK =
+  docx/zip), werd NIET genegeerd -> ~WRL*.tmp toegevoegd aan .gitignore.
+  Nog niet gecommit.
+Ilse: "ja, commit en zet de stand van zaken in proces.txt"
+
+==========================================================================
+EINDE SESSIE 2026-11-08 - STAND VAN ZAKEN
+==========================================================================
+Deadlines: di 10/11 = plan + pipeline (PDF-stap 3) tonen;
+  di 17/11 = hele project + presentatie.
+PIJPLIJN (PDF-stap 3) VOLLEDIG KLAAR. Commits vandaag:
+  d9281ca stap 2 controleren/filteren (aannames rij 84)
+  a7d0ee7 stap 3 samenvoegen: basistabel 42 rijen (raster + left join,
+          rij 85-90)
+  26e0c33 kaartpunten: Elche en Orihuela naar centrum, eigen stip per
+          kustdistrict, La Marina via OpenStreetMap (rij 91-93)
+  ee9d9a4 stap 4 berekenen: jaar op jaar + stijging 2019->2025 (rij 94-98)
+  + commit .gitignore (~WRL*.tmp = tijdelijke Word-kopie)
+  Niets gepusht (nog geen GitHub).
+Resultaat in data/verwerkt/ ("python pipeline.py" maakt ze opnieuw):
+  basistabel.csv 42 x 14, kustdistricten.csv 28 x 7, stijging.csv 10 rijen.
+  Kerncijfers prijs 2019->2025: Pilar +79,5 % (hoogst), Guardamar +50,3 %
+  (laagst); verkopen per 1000 inw.: Pilar +58,3 %, Santa Pola +6,2 %.
+App: 4 trechters + secties stap 1-4; AppTest 0 fouten.
+Open voor de volgende sessie:
+  1. Waaroms invullen (Ilse): rij 64, 66, 67, 69, 71, 72, 74, 80-83, 87,
+     90, 91, 98.
+  2. Voorbereiden presentatie 10/11 (pijplijn uitleggen zonder AI;
+     eventueel /timtim:oefen-gesprek).
+  3. Notariaat opvolgen rond 12/11.
+  4. Tekening dashboard (Ilse); daarna grafieken en kaart (E2-E8) tegen
+     17/11: kustdistricten = apart lijntje in prijsgrafiek + eigen stip
+     (rij 91); kwartaaltabellen (E5 corona) nog als bestand bewaren?
+     (rij 90 punt 5).
+  5. Daarna PDF-stap 4 (CLAUDE.md), 5 (GitHub + branch), 6 (pytest),
+     7 (deploy Streamlit Cloud).
+  6. Vermelden bij beperkingen: Orihuela vraagprijs 45-53 % boven taxatie
+     (vermoeden: aanbod vooral Orihuela Costa); 3 tegenstrijdigheden
+     taxatie (Torrevieja 2020, Orihuela 2020, Elche 2021); La Marina
+     kaartpunt uit OpenStreetMap; Balsares zonder eigen kaartpunt.
+  7. Claude Code bijwerken (claude update, aparte terminal).

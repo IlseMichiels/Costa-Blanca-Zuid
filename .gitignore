@@ -5,6 +5,7 @@ Elche.png
 
 # Tijdelijke Office-bestanden (Word/Excel die openstaan)
 ~$*
+~WRL*.tmp
 
 # Lokale Claude Code-instellingen
 .claude/settings.local.json
