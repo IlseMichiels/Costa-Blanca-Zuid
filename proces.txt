@@ -2168,3 +2168,10 @@ Open voor de volgende sessie:
      taxatie (Torrevieja 2020, Orihuela 2020, Elche 2021); La Marina
      kaartpunt uit OpenStreetMap; Balsares zonder eigen kaartpunt.
   7. Claude Code bijwerken (claude update, aparte terminal).
+Ilse: "hoe push ik naar github?"
+AI: nagekeken: geen remote, gh niet geinstalleerd, grootste bestand 6 MB
+  (limiet 100 MB). Les m1-02: lege repo op github.com aanmaken, URL
+  geven, agent koppelt en pusht. Uitleg + aandachtspunten (publiek/
+  privé, wat er publiek komt) gegeven; wacht op Ilse.
+Ilse: URL https://github.com/IlseMichiels/Costa-Blanca-Zuid.git
+AI: controle of de repo leeg is (git ls-remote), dan remote add + push.
