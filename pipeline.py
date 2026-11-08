@@ -178,7 +178,7 @@ def lees_inwoners(pad=RUW / "ine_2856_inwoners.csv"):
 
 
 def lees_coordinaten(pad=RUW / "wikidata_coordinaten.csv"):
-    """Wikidata: 1 kaartpunt per gemeente (rij 61-62, 75)."""
+    """Wikidata: kaartpunten (rij 75, 92). Kolom district leeg = gemeente (centrum), ingevuld = kustdistrict."""
     return pd.read_csv(pad, dtype={"ine_code": str})
 
 
@@ -358,7 +358,7 @@ def stappen_samenvoegen(prijs_jaar, verkopen_jaar, inwoners_jaar, taxatie_jaar, 
     """Trechter samenvoegen: raster van 42 rijen + elke bron eraan (left join) -> basistabel.
 
     Kolommen: ine_code | gemeente | jaar | prijs_m2 | aantal_verkopen | inwoners | verkopen_per_1000 |
-    taxatiewaarde_m2 | lat | lon | taxatie_tegenstrijdig | kaartpunt_kustkern  (spec stap 3, rij 85).
+    taxatiewaarde_m2 | lat | lon | taxatie_tegenstrijdig  (spec stap 3, rij 85, 92).
     """
     s = []
     taxatie = taxatie_jaar.rename(columns={"taxatie_meer5_m2": "taxatiewaarde_m2"})
@@ -366,7 +366,7 @@ def stappen_samenvoegen(prijs_jaar, verkopen_jaar, inwoners_jaar, taxatie_jaar, 
     niet_te_vergelijken = controle[["prijs_verandering_pct", "taxatie_verandering_pct"]].isna().any(axis=1)
     controle = controle.assign(
         taxatie_tegenstrijdig=controle["tegengesteld"].astype("boolean").mask(niet_te_vergelijken))
-    coord = coordinaten.assign(kaartpunt_kustkern=coordinaten["kaartpunt"].str.contains("kustkern"))
+    coord = coordinaten[coordinaten["district"].isna()]     # enkel de gemeentes, districten apart (rij 92)
 
     df = _stap(s, "raster", "6 gemeentes × 7 jaar (rij 86)", raster())
     df = _stap(s, "+ vraagprijs", "Idealista, jaargemiddelde (rij 70)", koppel(df, prijs_jaar, ["prijs_m2"]))
@@ -376,8 +376,8 @@ def stappen_samenvoegen(prijs_jaar, verkopen_jaar, inwoners_jaar, taxatie_jaar, 
                koppel(df, taxatie, ["taxatiewaarde_m2"]))
     df = _stap(s, "+ controle taxatie", "markering tegengestelde richting (rij 78, 85)",
                koppel(df, controle, ["taxatie_tegenstrijdig"]))
-    df = _stap(s, "+ coördinaten", "Wikidata, 1 kaartpunt per gemeente (rij 61-62, 85)",
-               koppel(df, coord, ["lat", "lon", "kaartpunt_kustkern"], sleutels=("ine_code",)))
+    df = _stap(s, "+ coördinaten", "Wikidata, centrum van elke gemeente (rij 92)",
+               koppel(df, coord, ["lat", "lon"], sleutels=("ine_code",)))
 
     df["aantal_verkopen"] = df["aantal_verkopen"].astype("Int64")      # gehele getallen, leeg blijft mogelijk
     df["inwoners"] = df["inwoners"].astype("Int64")
@@ -385,18 +385,21 @@ def stappen_samenvoegen(prijs_jaar, verkopen_jaar, inwoners_jaar, taxatie_jaar, 
     # Guardamar en Pilar (geen taxatie) komen niet voor in de controle -> na de left join ook leeg (rij 89)
     df["taxatie_tegenstrijdig"] = df["taxatie_tegenstrijdig"].astype("boolean")
     volgorde = ["ine_code", "gemeente", "jaar", "prijs_m2", "aantal_verkopen", "inwoners", "verkopen_per_1000",
-                "taxatiewaarde_m2", "lat", "lon", "taxatie_tegenstrijdig", "kaartpunt_kustkern"]
+                "taxatiewaarde_m2", "lat", "lon", "taxatie_tegenstrijdig"]
     df = df[volgorde]
     if len(df) != GEMEENTE_JAREN:
         raise ValueError(f"Basistabel heeft {len(df)} rijen in plaats van {GEMEENTE_JAREN}")
     return s, {"basistabel": df}
 
 
-def kustdistricten_tabel(districten_jaar):
-    """Kustdistricten apart, enkel vraagprijs (rij 87): district | gemeente | jaar | prijs_m2 (28 rijen)."""
+def kustdistricten_tabel(districten_jaar, coordinaten):
+    """Kustdistricten apart, enkel vraagprijs (rij 87) + eigen kaartpunt (rij 91-92):
+    district | gemeente | jaar | prijs_m2 | lat | lon (28 rijen)."""
     df = districten_jaar.merge(GEMEENTEN[["ine_code", "gemeente"]], on="ine_code", how="left")
     df = df.rename(columns={"kustdistrict": "district"})
-    return df[["district", "gemeente", "jaar", "prijs_m2"]].sort_values(["gemeente", "district", "jaar"]).reset_index(drop=True)
+    df = koppel(df, coordinaten[coordinaten["district"].notna()], ["lat", "lon"], sleutels=("district",))
+    cols = ["district", "gemeente", "jaar", "prijs_m2", "lat", "lon"]
+    return df[cols].sort_values(["gemeente", "district", "jaar"]).reset_index(drop=True)
 
 
 def bewaar(basistabel, districten, map_uit=VERWERKT):
@@ -430,9 +433,10 @@ def voer_uit():
     }
     eind = {naam: stappen[-1]["data"] for naam, (stappen, _) in stap2.items()}
     controle = controle_taxatie(eind["idealista"], eind["taxatie"])
+    coordinaten = lees_coordinaten()
     stap3 = stappen_samenvoegen(eind["idealista"], eind["verkopen"], eind["inwoners"], eind["taxatie"],
-                                controle, lees_coordinaten())
-    districten = kustdistricten_tabel(stap2["idealista"][1]["districten"])
+                                controle, coordinaten)
+    districten = kustdistricten_tabel(stap2["idealista"][1]["districten"], coordinaten)
     return stap2, controle, stap3, districten
 
 

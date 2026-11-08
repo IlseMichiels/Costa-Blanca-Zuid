@@ -34,7 +34,7 @@ Gestart: 2026-11-04. Beslissingen hierover komen in `beslissingslog.md`, het ver
 | B4 | INE — Cifras oficiales de población (Padrón), tabel 2856 | inwoners (totaal, man/vrouw) op 1 januari | gemeente × jaar | officiële bevolkingsregistratie | ✅ bruikbaar (05/11) |
 | B5 | INE — prijsindex (IPV) en transmisiones (ETDP) | prijsindex, aantal overdrachten | IPV: regio (CCAA); ETDP: provincie — **geen gemeente** | officieel | ❌ niet bruikbaar (06/11) |
 | B6 | Idealista — informes precio vivienda (histórico) | vraagprijs/m², vanaf januari 2006 | gemeente (alle 6 gevonden) | **vraag**prijs, geen verkoopprijs | ✅ werkbron voor de prijs (07/11, rij 68); Notariaat vervangt als het op tijd antwoordt |
-| B7 | Coördinaten — Wikidata (via INE-gemeentecode) | lengte- en breedtegraad per gemeente | gemeente (Elche, Orihuela: kustkern) | geografisch | ✅ bruikbaar (07/11) |
+| B7 | Coördinaten — Wikidata (via INE-gemeentecode) + OpenStreetMap (La Marina) | lengte- en breedtegraad per gemeente en per kustdistrict | gemeente (centrum) + 4 kustdistricten (herzien 08/11, rij 92) | geografisch | ✅ bruikbaar (07/11, herzien 08/11) |
 
 ## 3. Controlelijst per bron
 
@@ -247,6 +247,23 @@ Inwoners op 1 januari:
 2. ⚠️ Elche en Orihuela: hoofdkern ligt landinwaarts (~10 en ~25 km) → kustkern gekozen (rij 61).
 3. Kaartpunt = centrum van de woonkern, geen strand (rij 62).
 
+**Herziening B7 (2026-11-08, rij 91-92)** — de tabel en bevinding 2 hierboven gelden niet meer:
+- Elche en Orihuela krijgen ook het **centrum** als kaartpunt (cijfers = hele gemeente, stip = gemeente).
+- De **4 kustdistricten** krijgen een eigen stip (woonkern, geen strand, cf. rij 62):
+
+| Gemeente | District | Kaartpunt | Bron | lon | lat |
+|---|---|---|---|---|---|
+| Elche | — | centrum | Wikidata Q10509 | -0.6983 | 38.2669 |
+| Orihuela | — | centrum | Wikidata Q487786 | -0.9469 | 38.0856 |
+| Elche | Arenales del Sol | woonkern Los Arenales del Sol | Wikidata Q9023882 | -0.5214 | 38.2531 |
+| Elche | La Marina | woonkern la Marina | OpenStreetMap node 390185380 * | -0.6454 | 38.1464 |
+| Elche | El Altet – Balsares | woonkern El Altet ** | Wikidata Q6746200 | -0.5392 | 38.2731 |
+| Orihuela | Orihuela Costa | woonkern Orihuela Costa | Wikidata Q2803214 | -0.7535 | 37.9004 |
+
+\* La Marina: Wikidata heeft enkel het strand (Q28121201), niet de woonkern → OpenStreetMap (rij 93).
+\*\* Balsares heeft geen eigen kaartpunt in Wikidata; El Altet = hoofdkern van het district.
+De 4 andere gemeentes: coördinaten ongewijzigd t.o.v. 07/11.
+
 ## 4. Betrouwbaarheid
 
 *(per bron: wie maakt het, hoe wordt het gemeten, wat zijn de valkuilen — in te vullen)*
@@ -263,7 +280,7 @@ Inwoners op 1 januari:
 | verkopen_per_1000 | (berekend) | aantal_verkopen / inwoners × 1.000 | E4, E8 |
 | belgen | | | E8 |
 | taxatiewaarde_m2 | B2 tabel 4, kolom "meer dan 5 jaar" (4 van 6 gemeentes) | kwartalen → jaar: gemiddelde van de 4 kwartalen (rij 63) | controle |
-| lat / lon | B7 Wikidata (6 punten, sectie 3) | geen; Elche en Orihuela = kustkern + vermelding (rij 61) | E8 |
+| lat / lon | B7 Wikidata + OpenStreetMap (6 gemeentes + 4 districten, sectie 3) | geen; ~~Elche en Orihuela = kustkern + vermelding (rij 61)~~ herzien: centrum + eigen stip per district (rij 92) | E8 |
 
 ## 6. Gevolgen voor het ontwerp en de mission statement
 

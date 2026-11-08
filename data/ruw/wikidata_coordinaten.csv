@@ -1,7 +1,11 @@
-ine_code,gemeente,kaartpunt,wikidata,lon,lat,opgehaald
-03065,Elche,Los Arenales del Sol (kustkern),Q9023882,-0.5214,38.2531,2026-11-07
-03133,Torrevieja,centrum,Q221749,-0.6833,37.9778,2026-11-07
-03121,Santa Pola,centrum,Q257707,-0.5556,38.1897,2026-11-07
-03099,Orihuela,Orihuela Costa (kustkern),Q2803214,-0.7535,37.9004,2026-11-07
-03076,Guardamar del Segura,centrum,Q927965,-0.655,38.0897,2026-11-07
-03902,Pilar de la Horadada,centrum,Q956513,-0.7926,37.8675,2026-11-07
+ine_code,gemeente,district,kaartpunt,bron,bron_id,lon,lat,opgehaald
+03065,Elche,,centrum,wikidata,Q10509,-0.6983,38.2669,2026-11-08
+03133,Torrevieja,,centrum,wikidata,Q221749,-0.6833,37.9778,2026-11-08
+03121,Santa Pola,,centrum,wikidata,Q257707,-0.5556,38.1897,2026-11-08
+03099,Orihuela,,centrum,wikidata,Q487786,-0.9469,38.0856,2026-11-08
+03076,Guardamar del Segura,,centrum,wikidata,Q927965,-0.655,38.0897,2026-11-08
+03902,Pilar de la Horadada,,centrum,wikidata,Q956513,-0.7926,37.8675,2026-11-08
+03065,Elche,Arenales del Sol,woonkern Los Arenales del Sol,wikidata,Q9023882,-0.5214,38.2531,2026-11-08
+03065,Elche,La Marina,woonkern la Marina,openstreetmap,N390185380,-0.6454,38.1464,2026-11-08
+03065,Elche,El Altet – Balsares,woonkern El Altet (Balsares heeft geen eigen kaartpunt),wikidata,Q6746200,-0.5392,38.2731,2026-11-08
+03099,Orihuela,Orihuela Costa,woonkern Orihuela Costa,wikidata,Q2803214,-0.7535,37.9004,2026-11-08

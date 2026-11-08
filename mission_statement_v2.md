@@ -44,7 +44,7 @@ Geen rangnummers en geen gecombineerde score: de grafieken worden van hoog naar 
 | **B3 Ministerio** — tabel 2.4 | **Aantal verkopen** van tweedehandswoningen per gemeente, per kwartaal | ⚠️ bruikbaar met beperking | 50, 51 |
 | **B4 INE Padrón** — tabel 2856 | **Inwoners** per gemeente (voor "per 1.000 inwoners"); verkopen jaar X ↔ telling 1/1 jaar X+1 | ✅ bruikbaar | 54, 58 |
 | **B2 Ministerio** — tabel 4 (valor tasado) | **Controle**: taxatiewaarde/m² (gemiddelde van 4 kwartalen), enkel 4 van de 6 gemeentes | ⚠️ controle | 48, 56, 63 |
-| **B7 Wikidata** | **Coördinaten** voor de kaart; Elche en Orihuela = kustkern | ✅ bruikbaar | 61, 62 |
+| **B7 Wikidata** (+ OpenStreetMap) | **Coördinaten** voor de kaart; ~~Elche en Orihuela = kustkern~~ herzien: centrum van elke gemeente + eigen stip per kustdistrict | ✅ bruikbaar | 61, 62, 92 |
 | B1 Notariado | Echte verkoopprijzen — **vervangt Idealista als het op tijd antwoordt** | ⚠️ geblokkeerd, mail 05/11 zonder antwoord | 49, 53, 68 |
 | B5 INE prijsindex | — | ❌ niet per gemeente | 59 |
 

@@ -2019,3 +2019,65 @@ Ilse: "ja en commit" (akkoord aannames 1, 3, 4, 5 stap 3)
 AI: beslissingslog rij 90. Commit "Pijplijn stap 3" met pipeline.py,
   app.py, proces.txt, beslissingslog.md, data/verwerkt/*.csv. Niets
   gepusht.
+Ilse: "toon me rij 87 en 90"
+AI: rijen 87 en 90 uit beslissingslog getoond (waarom nog leeg).
+Ilse: "toon me mijn beslissing bij rij 65"
+AI: rij 65 en de open beslissing die ernaar verwijst getoond.
+Ilse (rij 65): "omdat het mij om de kust gaat wil ik ze mee opnemen.
+  Over de hoe ben ik nog niet zeker"
+AI: waarom rij 65 ingevuld met woorden Ilse; open beslissing aangepast:
+  kustdistricten komen op het dashboard (ja), "hoe" blijft open.
+Ilse: "ik vind een apart lijntje in de prijsgrafiek en een eigen stip
+  wel geschikt"
+AI: beslissingslog rij 91 + open beslissing bijgewerkt. Probleem gemeld:
+  kaartpunt Elche = Arenales del Sol en kaartpunt Orihuela = Orihuela
+  Costa (B7, rij 61-62) -> eigen stip district valt (bijna) samen met
+  stip gemeente. Vraag aan Ilse hoe op te lossen.
+Ilse: "a lijkt me het volledigst" (gemeentestip Elche/Orihuela naar
+  centrum, districten eigen stip)
+AI: beslissingslog rij 92 (herziening rij 61 en 85). Uitvoering
+  voorgesteld, wacht op akkoord over het moment (nu of na stap 4).
+Ilse: "wat is exact de impact als we het nu doen"
+AI: alle plaatsen met kustkern/kaartpunt opgezocht (7 bestanden + CSV);
+  impact per bestand, wat verandert/niet, risico en tijd uitgelegd.
+Ilse: "ja doe maar" (rij 92 nu uitvoeren)
+AI: Wikidata-codes districten zoeken. Gevonden: Arenales del Sol
+  Q9023882, Orihuela Costa Q2803214, L'Altet Q6746200 (human settlement
+  in Elche). Balsares: geen item. La Marina: 2 treffers in Mexico, rest
+  nog na te gaan. Wikidata gaf HTTP 429 (Too Many Requests: te veel
+  vragen kort na elkaar) -> hulpscript in scratchpad dat de wachttijd
+  (Retry-After) respecteert, op de achtergrond. Ondertussen code
+  aanpassen.
+AI: zoekresultaat Wikidata (achtergrond, na wachttijd):
+  Elche = Q10509. Arenales del Sol Q9023882 (woonkern, in Elche),
+  El Altet Q6746200 (woonkern, in Elche), Orihuela Costa Q2803214.
+  Balsares: geen item (enkel een wetenschappelijk artikel) -> El Altet
+  als kaartpunt voor district "El Altet - Balsares" voorgesteld.
+  La Marina (Elche): GEEN woonkern-item; enkel strand "La Marina"
+  Q28121201 (38.14, -0.6358). Vraag aan Ilse: strand (Wikidata) of
+  woonkern via OpenStreetMap.
+  pipeline.py en app.py al aangepast (kaartpunt_kustkern weg,
+  districten lat/lon); syntax ok, nog niet uitgevoerd.
+Ilse: "ik kies b voor de nauwkeurigheid" (La Marina via OpenStreetMap)
+AI: testvraag aan Nominatim (zoekdienst OpenStreetMap) om na te gaan
+  of het de woonkern in Elche is.
+AI: OpenStreetMap gaf "la Marina", place/village in Elx/Elche (03194),
+  38.1464 / -0.6454 (node 390185380); 2e treffer = dierenarts, genegeerd.
+  ophalen_bronnen.py herschreven: GEMEENTE_PUNTEN (6x centrum via INE-
+  code) + DISTRICT_PUNTEN (4 districten, bron wikidata/openstreetmap per
+  punt, OSM via vast nummer); kolommen district, bron, bron_id;
+  "python ophalen_bronnen.py coordinaten" haalt enkel de kaartpunten.
+  Uitgevoerd: Elche centrum 38.2669/-0.6983, Orihuela centrum
+  38.0856/-0.9469; 4 andere gemeentes identiek aan 07/11.
+  pipeline.py opnieuw gedraaid. Vergelijking met commit a7d0ee7: alle
+  cijferkolommen ongewijzigd; lat/lon gewijzigd in 14 rijen (Elche,
+  Orihuela); kolom kaartpunt_kustkern weg (11 kolommen); districten
+  28 rijen x 6 kolommen, 0 lege lat/lon. AppTest 0 fouten.
+  data-exploratie.md (B7) en mission_statement_v2.md: herziening rij 92
+  erbij gezet, oude tekst behouden (doorgestreept of met verwijzing).
+  Beslissingslog rij 93 (La Marina OSM; El Altet nog te bevestigen).
+  Bestandsnaam wikidata_coordinaten.csv behouden (bevat nu ook 1 OSM-punt).
+Status: wacht op Ilse (El Altet bevestigen, commit).
+Ilse: "ja akkoord met El Altet, maak de commit"
+AI: rij 93 bijgewerkt (El Altet aanvaard). Commit "Kaartpunten: gemeentes
+  naar centrum, eigen stip per kustdistrict". Niets gepusht.

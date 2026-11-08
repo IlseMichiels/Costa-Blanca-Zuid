@@ -61,7 +61,8 @@ def stap3():
     stappen, extra = pl.stappen_samenvoegen(
         eind["Idealista (vraagprijs)"], eind["Ministerio (verkopen)"], eind["INE (inwoners)"],
         eind["Ministerio (taxatie, controle)"], controle, coordinaten())
-    return stappen, extra["basistabel"], pl.kustdistricten_tabel(r["Idealista (vraagprijs)"][1]["districten"])
+    return stappen, extra["basistabel"], pl.kustdistricten_tabel(r["Idealista (vraagprijs)"][1]["districten"],
+                                                                  coordinaten())
 
 
 def trechter(stappen, titel):
@@ -163,7 +164,8 @@ with st.expander(f"INE tabel 2856 — inwoners op 1 januari · {getal(len(df_w))
     st.dataframe(df_w.head(6), hide_index=True)
 
 with st.expander(f"Wikidata — kaartpunten · {getal(len(df_c))} rijen"):
-    st.markdown("- **Bron:** `wikidata_coordinaten.csv`; Elche en Orihuela = kustkern (rij 61–62)")
+    st.markdown("- **Bron:** `wikidata_coordinaten.csv`: het centrum van elke gemeente + een eigen kaartpunt "
+                "voor de 4 kustdistricten (rij 91–92; herziening van rij 61)")
     st.dataframe(df_c, hide_index=True)
 
 # --------------------------------------------------------------------------
@@ -235,8 +237,7 @@ with st.expander(f"Basistabel · {len(basistabel)} rijen × {basistabel.shape[1]
         "`taxatie_tegenstrijdig` is daar en in 2019 (geen vorig jaar) leeg = niet te controleren (rij 89)\n"
         f"- **Markering `taxatie_tegenstrijdig`:** {int(basistabel['taxatie_tegenstrijdig'].sum())} rijen — "
         "vraagprijs en taxatie bewegen in tegengestelde richting; extra opzoeken (rij 85)\n"
-        f"- **Markering `kaartpunt_kustkern`:** {basistabel.loc[basistabel['kaartpunt_kustkern'], 'gemeente'].nunique()} "
-        "gemeentes (Elche, Orihuela) — de stip op de kaart staat op de kustkern, niet op het centrum\n"
+        "- **lat / lon** = centrum van de gemeente; de kustdistricten hebben een eigen kaartpunt (rij 92)\n"
         "- **verkopen_per_1000** = aantal verkopen ÷ inwoners op 1/1 van hetzelfde jaar × 1.000 (rij 58)"
     )
     st.dataframe(
@@ -250,8 +251,8 @@ with st.expander(f"Basistabel · {len(basistabel)} rijen × {basistabel.shape[1]
     )
 
 with st.expander(f"Kustdistricten apart · {len(districten)} rijen (enkel vraagprijs, rij 87)"):
-    st.markdown("4 districten × 7 jaar. Geen verkopen of inwoners per district; coördinaten beslissen we bij het "
-                "dashboard (rij 65).")
+    st.markdown("4 districten × 7 jaar. Geen verkopen of inwoners per district. Op het dashboard: apart lijntje "
+                "in de prijsgrafiek en een eigen stip op de kaart (rij 91–92).")
     st.dataframe(districten, hide_index=True,
                  column_config={"jaar": st.column_config.NumberColumn(format="%d"),
                                 "prijs_m2": st.column_config.NumberColumn("vraagprijs €/m²", format="%.0f")})
