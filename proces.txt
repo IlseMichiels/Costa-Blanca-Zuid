@@ -2175,3 +2175,52 @@ AI: nagekeken: geen remote, gh niet geinstalleerd, grootste bestand 6 MB
   privé, wat er publiek komt) gegeven; wacht op Ilse.
 Ilse: URL https://github.com/IlseMichiels/Costa-Blanca-Zuid.git
 AI: controle of de repo leeg is (git ls-remote), dan remote add + push.
+AI: proces.txt gecommit, remote origin toegevoegd, "git push -u origin
+  main" gelukt (nieuwe branch main op GitHub). Gecontroleerd: lokale en
+  online commit gelijk; geen docx, mail_notariaat, Elche.png, ~WRL of
+  .env online.
+Ilse: "we stoppen even."
+AANVULLING STAND VAN ZAKEN 08/11: project staat nu op GitHub
+  (https://github.com/IlseMichiels/Costa-Blanca-Zuid, publiek, branch
+  main, laatste commit f50d5ae). PDF-stap 5 deels: GitHub ok, branch nog
+  te doen (bij het dashboard). Aandachtspunt: Idealista-teksten in
+  data/ruw/ publiek -> eventueel navragen bij Tim.
+  Niet gecommit: enkel deze laatste regels van proces.txt.
+
+SESSIE 2026-11-09
+Ilse: "hoe staat onze planning voor 10 november er voor?"
+AI: stand nagekeken (proces.txt, git, memory). App gecontroleerd met
+  AppTest: 0 fouten. Lokaal = GitHub (f50d5ae). Overzicht gegeven:
+  PDF-stap 1-3 klaar voor 10/11; open: waaroms invullen, presentatie
+  voorbereiden (oefen-gesprek). Wacht op Ilse.
+
+SESSIE 2026-11-10
+Ilse: "leg mij Formule: (waarde dit jaar / waarde vorig jaar - 1) x 100;
+  2019 is leeg (geen vorig jaar) uit"
+AI: uitleg gegeven met echte cijfers Torrevieja uit basistabel.csv
+  (prijs_m2 2019 1413,75 -> 2020 1437,25 = +1,66 %; aantal_verkopen
+  2020 -33,15 %, 2021 +52,3 %). Stappen: deling = verhouding, -1 = enkel
+  het verschil, x100 = procent. 2019 leeg: geen 2018 in de data om mee te
+  delen; pandas shift(1) per gemeente geeft dan NaN (leeg). Valkuil
+  uitgelegd: -33 % en daarna +52 % is niet terug op nul (basis verschilt).
+  Code: pipeline.py jaar_op_jaar (regel 456). Geen bestanden gewijzigd
+  behalve proces.txt.
+Ilse: "zijn de linken naar de bronnen ergens vermeld?"
+AI: gezocht naar URL's in het project. Linken staan in
+  data-exploratie.md (Ministerio 2.4 + 4 met tabellenlijst, INE 2856
+  webpagina + API, INE IPV/ETDP, Idealista enkel Guardamar) en in
+  ophalen_bronnen.py (INE-API, Wikidata, Nominatim). In app.py staan
+  enkel bestandsnamen, geen linken; de ruwe Idealista-bestanden bevatten
+  geen URL. Ontbreekt: Idealista-URL per gemeente, centrale bronnenlijst
+  (geen README). Geen bestanden gewijzigd behalve proces.txt.
+Ilse: "maak een README.md met een bronnenlijst"
+AI: README.md aangemaakt: korte projectintro, overzichtstabel 5 bronnen
+  (wat, bestand in data/ruw/, ophaaldatum), per bron de linken (uit
+  data-exploratie.md en ophalen_bronnen.py), "bekeken maar niet
+  gebruikt" (INE IPV/ETDP), opnieuw ophalen. Datums uit de csv-kolom
+  'opgehaald' (INE 07/11, kaartpunten 08/11), Ministerio 05/11, Idealista
+  07/11 (sessie). Idealista: enkel Guardamar-link ingevuld (de enige die
+  vaststaat); 9 andere als "link nog aan te vullen" -> Ilse zoekt ze op
+  (site blokkeert AI). Nog niet gecommit.
+Ilse: "commit en push naar GitHub"
+AI: README.md + proces.txt gecommit en gepusht naar origin/main.
