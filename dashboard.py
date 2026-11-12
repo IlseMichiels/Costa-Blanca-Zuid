@@ -133,15 +133,30 @@ def conclusies(basis, stijging, kwartalen):
     gem = stijging[stijging["soort"] == "gemeente"].set_index("gemeente")
     dist = stijging[stijging["soort"] == "kustdistrict"].set_index("district")
     duur, goedkoop = j_tot["prijs_m2"].idxmax(), j_tot["prijs_m2"].idxmin()
-    midden = j_tot["prijs_m2"].drop([duur, goedkoop])
     duurste_dist = dist["prijs_m2_2025"].idxmax()
+    # geen bedragen in €/m² in de tekst: die staan al in de grafieken (rij 110)
+    if dist.loc[duurste_dist, "prijs_m2_2025"] > j_tot["prijs_m2"].max():
+        kust = f"**{duurste_dist}** is zelfs duurder dan elke gemeente als geheel."
+    else:
+        kust = f"Het duurste kustdistrict is **{duurste_dist}**."
 
+    # Enkel cijfers die je NIET uit een grafiek kan aflezen (rij 111): geen stijging 2019-2025 (staafdiagram),
+    # geen aantallen of per 1.000 (kaartjes, verkopengrafiek). Wel: versnelling, stijging verkopen, corona.
     p = gem["prijs_m2_stijging_pct"]
     jaar_pct = basis.pivot(index="jaar", columns="gemeente", values="prijs_m2_jaar_pct")
-    vroeg, laat = jaar_pct.loc[VAN + 1:VAN + 2], jaar_pct.loc[TOT - 1:TOT]
+    # versnelling (rij 112, optie A): gemiddelde jaarstijging per gemeente, daarna gemiddelde van de 6
+    # gemeentes (elke gemeente telt even zwaar); verschil in procentpunten, geen factor
+    vroeg = jaar_pct.loc[VAN + 1:VAN + 2].mean()
+    laat = jaar_pct.loc[TOT - 1:TOT].mean()
+    overal = " Dat geldt voor elke gemeente." if (laat > vroeg).all() else ""
 
     v = j_tot["aantal_verkopen"]
     v1000 = j_tot["verkopen_per_1000"]
+    if v.idxmax() == v1000.idxmax():
+        meest = f"**{v.idxmax()}** verkoopt het meest, absoluut én per 1.000 inwoners."
+    else:
+        meest = (f"**{v.idxmax()}** verkoopt absoluut het meest, **{v1000.idxmax()}** het meest per "
+                 "1.000 inwoners.")
     groei_v = gem["aantal_verkopen_stijging_pct"].sort_values(ascending=False)
 
     per_jaar = basis.groupby("jaar")["aantal_verkopen"].sum()
@@ -158,18 +173,14 @@ def conclusies(basis, stijging, kwartalen):
         # koppeling met de analysevragen van mission_statement_v2.md (niet op het scherm, rij 109):
         # Prijsniveau = V1 + V2 · Prijsstijging = V4 · Verkopen = V3 · Corona = V4
         st.markdown(
-            f"- **Prijsniveau:** in {TOT} is **{duur}** het duurst ({heel(j_tot.loc[duur, 'prijs_m2'])} €/m²) "
-            f"en **{goedkoop}** het goedkoopst ({heel(j_tot.loc[goedkoop, 'prijs_m2'])} €/m²). De andere vier liggen "
-            f"dicht bij elkaar ({heel(midden.min())}–{heel(midden.max())} €/m²). Aan de kust is het duurder dan in de "
-            f"hele gemeente: **{duurste_dist}** vraagt {heel(dist.loc[duurste_dist, 'prijs_m2_2025'])} €/m².\n"
-            f"- **Prijsstijging:** alle zes stegen sterk, van {pct(p.min())} ({p.idxmin()}) tot "
-            f"{pct(p.max())} ({p.idxmax()}) tussen {VAN} en {TOT}. De stijging **versnelt**: in {VAN + 1}–{VAN + 2} "
-            f"lag de stijging per jaar tussen {pct(vroeg.min().min())} en {pct(vroeg.max().max())}, "
-            f"in {TOT - 1}–{TOT} tussen {pct(laat.min().min())} en {pct(laat.max().max())}.\n"
-            f"- **Verkopen:** **{v.idxmax()}** verkoopt het meest ({heel(v.max())} woningen in {TOT}, "
-            f"{komma(v1000.loc[v.idxmax()])} per 1.000 inwoners). {v1000.idxmin()} verkoopt absoluut veel "
-            f"({heel(v.loc[v1000.idxmin()])}), maar per 1.000 inwoners het minst ({komma(v1000.min())}). "
-            f"Het aantal verkopen steeg het sterkst in **{groei_v.index[0]}** ({pct(groei_v.iloc[0])}) en "
+            f"- **Prijsniveau:** in {TOT} is **{duur}** het duurst en **{goedkoop}** het goedkoopst. De andere vier "
+            f"liggen dicht bij elkaar. {kust}\n"
+            f"- **Prijsstijging:** alle zes stegen sterk tussen {VAN} en {TOT}, het sterkst in **{p.idxmax()}**, "
+            f"het minst in **{p.idxmin()}**. De stijging **versnelt**: van gemiddeld {pct(vroeg.mean())} per jaar "
+            f"in {VAN + 1}–{VAN + 2} naar {pct(laat.mean())} per jaar in {TOT - 1}–{TOT}, dat is "
+            f"{komma(laat.mean() - vroeg.mean())} procentpunten sneller.{overal}\n"
+            f"- **Verkopen:** {meest} **{v1000.idxmin()}** verkoopt absoluut veel, maar per 1.000 inwoners "
+            f"het minst. Het aantal verkopen steeg het sterkst in **{groei_v.index[0]}** ({pct(groei_v.iloc[0])}) en "
             f"**{groei_v.index[1]}** ({pct(groei_v.iloc[1])}).\n"
             f"- **Corona:** in het 2e kwartaal van 2020 (lockdown) zakte het aantal verkopen met "
             f"{komma(abs(lockdown), 0)} % tegenover een jaar eerder (6 gemeentes samen), over heel 2020 met "

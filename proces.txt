@@ -2352,3 +2352,38 @@ AI: dashboard.py: "(V1, V2)", "(V4)", "(V3)", "(V4)" weg uit de titels van
   de conclusies; koppeling als commentaarregel in de code bewaard.
   AppTest: 0 fouten, geen V-codes meer op het scherm. Gecommit op main,
   nog niet gepusht.
+Ilse: "in de conclusie hoef je ook niet te verwijzen naar de prijzen. Dit
+  is al duidelijk op de grafieken"
+AI: aanname: "prijzen" = bedragen in euro per m2 (enkel in Prijsniveau).
+  Weggehaald; kustzin herschreven zonder bedrag ("Arenales del Sol is
+  zelfs duurder dan elke gemeente als geheel", door de code nagekeken).
+  Percentages en aantallen verkopen laten staan -> vraag aan Ilse.
+  AppTest: 0 fouten. (beslissingslog rij 110) Nog niet gecommit.
+Ilse: "kan je de prijsversnelling zelf in procenten uitdrukken?"
+AI: 3 manieren berekend (basistabel, 6 gemeentes):
+  A gemiddelde jaarstijging: 2020-21 +1,4 % -> 2024-25 +14,4 % per jaar
+    = +12,9 procentpunten (per gemeente +9,0 Orihuela tot +15,8 Pilar)
+  B stijging over 2 jaar: 2019->2021 gem. +2,9 % -> 2023->2025 +30,8 %
+  C factor: 14,4 / 1,4 = 9,9 keer zo snel -> afgeraden (basis bijna 0,
+    Guardamar 2020-21 zelfs negatief: factor zegt dan niets).
+  Valkuil uitgelegd: verschil tussen 2 percentages = procentpunten, niet %.
+  Advies A. Wacht op keuze Ilse; vraag over overige cijfers (a/b/c) staat
+  nog open.
+Ilse: "waarom zou je zelf b kiezen voor de andere cijfers"
+AI: uitleg: regel "enkel cijfers die je NIET uit een grafiek kan aflezen"
+  (= consequent met rij 110). Nagekeken welke cijfers waar staan:
+  prijsstijging 2019-2025 = labels staafdiagram (weg); 62,5 per 1.000 =
+  kaartjes (weg); 6.154 / 3.233 / 13,2 = enkel bij muis over grafiek
+  (twijfel, voorstel weg); stijging verkopen +78,5 % / +75,7 % = nergens
+  in een grafiek, enkel tooltip kaart (houden); corona -62 % (houden);
+  versnelling optie A (houden). Nadeel b: conclusie zonder cijfers kan
+  vaag worden. Wacht op keuze.
+Ilse: "b en A" (beslissingslog rij 111 en 112)
+AI: dashboard.py conclusies herschreven:
+  - Prijsstijging: sterkst Pilar, minst Guardamar (zonder %); versnelling
+    +1,4 % -> +14,4 % per jaar = 12,9 procentpunten; "geldt voor elke
+    gemeente" door de code nagekeken.
+  - Verkopen: zonder aantallen; "Torrevieja meest, absoluut en per 1.000"
+    door de code nagekeken; stijging verkopen % blijft.
+  - Corona ongewijzigd (ook -2,8 % tot +3,3 %: staat in geen grafiek).
+  AppTest: 0 fouten op beide tabbladen. Gecommit op main, niet gepusht.
