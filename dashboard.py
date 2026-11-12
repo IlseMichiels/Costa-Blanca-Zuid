@@ -28,6 +28,8 @@ KLEUREN = {
     "Pilar de la Horadada": "#008300",
 }
 VOLGORDE = list(KLEUREN)
+# kustdistricten: kleur van hun gemeente + een eigen lijnstijl, zodat de 3 van Elche uit elkaar te houden zijn (rij 118)
+STREEP = {"Arenales del Sol": "dash", "El Altet – Balsares": "dot", "La Marina": "dashdot", "Orihuela Costa": "dash"}
 VAN, TOT = pl.PERIODE
 
 CSS = """
@@ -303,8 +305,9 @@ def kaart(basis, districten, stijging, gekozen):
 # --------------------------------------------------------------------------
 def prijsgrafiek(basis, districten, gekozen):
     st.markdown('<div class="sectie">Vraagprijs per m²</div>', unsafe_allow_html=True)
-    st.markdown('<div class="uitleg">Volle lijn = hele gemeente, stippellijn = kustdistrict in de kleur van de '
-                'gemeente. Een onderbroken lijn = geen data.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="uitleg">Volle lijn = hele gemeente. Streepjes, puntjes of streep-punt = kustdistrict, '
+                'in de kleur van de gemeente. Ontbreekt een jaar, dan is er een gat in de lijn.</div>',
+                unsafe_allow_html=True)
     fig = go.Figure()
     for g in gekozen:
         df = basis[basis["gemeente"] == g]
@@ -312,8 +315,8 @@ def prijsgrafiek(basis, districten, gekozen):
                                  line=dict(color=KLEUREN[g], width=2.5), marker=dict(size=7),
                                  connectgaps=False, hovertemplate="%{y:,.0f} €/m²"))
         for dnaam, dd in districten[districten["gemeente"] == g].groupby("district", sort=False):
-            fig.add_trace(go.Scatter(x=dd["jaar"], y=dd["prijs_m2"], name=f"{dnaam} (kust)", mode="lines",
-                                     line=dict(color=KLEUREN[g], width=2, dash="dash"),
+            fig.add_trace(go.Scatter(x=dd["jaar"], y=dd["prijs_m2"], name=f"{dnaam} ({g})", mode="lines",
+                                     line=dict(color=KLEUREN[g], width=2, dash=STREEP.get(dnaam, "dash")),
                                      connectgaps=False, hovertemplate="%{y:,.0f} €/m²"))
     stijl(fig, hoogte=430)
     fig.update_yaxes(title=None, ticksuffix=" €")

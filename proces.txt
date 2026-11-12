@@ -2449,3 +2449,9 @@ Ilse: "b" (proef weggooien, beslissingslog rij 117)
 AI: terug naar main, branch kust-schakelaar verwijderd (git branch -D).
   App toont weer de versie van main. Ook de aparte lijnstijl per district
   (bijkomend in de proef) is daarmee weg.
+Ilse: "zet de eigen lijnstijl per district terug" (beslissingslog rij 118)
+AI: dashboard.py op main: STREEP per district (dash/dot/dashdot), legende
+  "Arenales del Sol (Elche)" enz.; uitleg aangepast ("onderbroken lijn =
+  geen data" was nu dubbelzinnig -> "ontbreekt een jaar, dan is er een
+  gat in de lijn"). AppTest: 0 fouten, lijnstijlen nagekeken. Gecommit op
+  main, niet gepusht.
