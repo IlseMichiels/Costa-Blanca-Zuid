@@ -404,13 +404,13 @@ def versnellingsgrafiek(basis, gekozen):
 # --------------------------------------------------------------------------
 # 6 · Aantal verkopen (E4): absoluut of per 1.000 inwoners (rij 41)
 # --------------------------------------------------------------------------
-def verkopengrafiek(basis, gekozen, maat):
-    kolom, eenheid = (("aantal_verkopen", "verkopen") if maat == "absoluut aantal"
+def verkopengrafiek(basis, gekozen):
+    st.markdown('<div class="sectie">Verkochte tweedehandswoningen</div>', unsafe_allow_html=True)
+    st.markdown('<div class="uitleg">Per 1.000 inwoners toont hoe <i>in trek</i> een gemeente is, los van haar '
+                'grootte. Geen cijfers per kustdistrict.</div>', unsafe_allow_html=True)
+    maat = filter_maat()
+    kolom, eenheid = (("aantal_verkopen", "verkopen") if maat == MATEN[0]
                       else ("verkopen_per_1000", "per 1.000 inw."))
-    st.markdown(f'<div class="sectie">Verkochte tweedehandswoningen — {maat}</div>', unsafe_allow_html=True)
-    st.markdown('<div class="uitleg">Kies in de zijbalk absoluut of per 1.000 inwoners. Per 1.000 inwoners toont hoe '
-                '<i>in trek</i> een gemeente is, los van haar grootte. Geen cijfers per kustdistrict.</div>',
-                unsafe_allow_html=True)
     fig = go.Figure()
     for g in gekozen:
         df = basis[basis["gemeente"] == g]
@@ -456,28 +456,37 @@ def coronagrafiek(kwartalen, gekozen):
 # --------------------------------------------------------------------------
 # Zijbalk en geheel
 # --------------------------------------------------------------------------
-def filters():
-    """Filters in de zijbalk (rij 41): gemeentes aan/uit en verkopen absoluut of per 1.000 inwoners."""
-    st.sidebar.markdown("### Filters")
-    st.sidebar.caption("Werken op de kaart en de grafieken. De kerncijfers en conclusies tonen altijd alle "
-                       f"6 gemeentes, {VAN}–{TOT}.")
-    st.sidebar.markdown("**Gemeentes** (noord → zuid)")
-    gekozen = [g for g in VOLGORDE if st.sidebar.checkbox(g, value=True, key=f"filter_{g}")]
-    maat = st.sidebar.radio("**Verkopen tonen als**", ["absoluut aantal", "per 1.000 inwoners"], key="filter_maat")
-    st.sidebar.divider()
-    st.sidebar.caption("Kustdistricten horen bij hun gemeente: vink je Elche of Orihuela uit, dan verdwijnen "
-                       "ook hun kustdistricten.")
-    return gekozen, maat
+MATEN = ["absoluut aantal", "per 1.000 inwoners"]
+
+
+def filter_gemeentes():
+    """Filter gemeentes in het tabblad zelf (proef, branch filters-in-tab): balk net boven de kaart.
+
+    Werkt op de kaart en alle grafieken; de kerncijfers erboven en de conclusies niet (rij 41).
+    """
+    with st.container(border=True):
+        keuze = st.pills(
+            "Gemeentes op de kaart en in de grafieken (klik om aan of uit te zetten · noord → zuid)",
+            VOLGORDE, selection_mode="multi", default=VOLGORDE, key="filter_gemeentes")
+        st.caption("Kustdistricten horen bij hun gemeente: zet je Elche of Orihuela uit, dan verdwijnen ook hun "
+                   "kustdistricten. De kerncijfers hierboven en de conclusies onderaan tonen altijd alle 6.")
+    return [g for g in VOLGORDE if g in (keuze or [])]       # vaste volgorde, ongeacht de klikvolgorde
+
+
+def filter_maat():
+    """Schakelaar absoluut / per 1.000 inwoners, net boven de verkopengrafiek (de enige grafiek waarop hij werkt)."""
+    maat = st.segmented_control("Verkopen tonen als", MATEN, default=MATEN[0], key="filter_maat")
+    return maat or MATEN[0]           # klik je de gekozen knop opnieuw aan, dan is er niets gekozen -> absoluut
 
 
 def toon():
     """Tekent het volledige dashboard."""
     st.markdown(CSS, unsafe_allow_html=True)
     basis, districten, stijging, kwartalen = data()
-    gekozen, maat = filters()
 
     titel()
     kaartjes(basis, stijging)
+    gekozen = filter_gemeentes()
 
     if gekozen:
         kaart(basis, districten, stijging, gekozen)
@@ -487,10 +496,10 @@ def toon():
         with rechts:
             stijgingsgrafiek(stijging, gekozen)
         versnellingsgrafiek(basis, gekozen)
-        verkopengrafiek(basis, gekozen, maat)
+        verkopengrafiek(basis, gekozen)
         coronagrafiek(kwartalen, gekozen)
     else:
-        st.info("Vink in de zijbalk minstens één gemeente aan om de kaart en de grafieken te zien.")
+        st.info("Zet in de balk hierboven minstens één gemeente aan om de kaart en de grafieken te zien.")
 
     # conclusies + beperkingen onderaan (rij 106, herziet rij 38); altijd alle 6 gemeentes (rij 41)
     st.divider()

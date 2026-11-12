@@ -2416,3 +2416,20 @@ Ilse: "commit maar"
 AI: alles was al gecommit (elke wijziging meteen). Enkel deze regels van
   proces.txt gecommit. 6 commits op main nog niet op GitHub; gevraagd of
   Ilse "push" bedoelde.
+Ilse: "toon me eens hoe het eruit ziet als de filters niet in de zijkant
+  maar in de tab zelf staan"
+AI: proef op aparte branch "filters-in-tab" (main blijft ongewijzigd).
+  Voorstel: gemeentes als klikbare knopjes (st.pills) in een balk net
+  boven de kaart; absoluut/per 1.000 als schakelaar (st.segmented_control)
+  net boven de verkopengrafiek; zijbalk verdwijnt.
+AI: gebouwd op branch filters-in-tab: filter_gemeentes() (st.pills in
+  een kader net onder de kerncijfers, boven de kaart) en filter_maat()
+  (st.segmented_control in de sectie verkopen). Zijbalk is leeg en
+  verdwijnt. AppTest: 0 fouten bij start, 2 gemeentes, per 1.000,
+  schakelaar leeg (-> absoluut), geen gemeentes (melding, conclusies
+  blijven). Gecommit op filters-in-tab; main ongewijzigd. Nog niet in
+  beslissingslog: eerst beslist Ilse of ze het houdt.
+Ilse: "a, zo is er meer ruimte voor de grafieken" (beslissingslog rij 116,
+  herziet rij 41)
+AI: filters-in-tab gemerged in main (--no-ff) en de proefbranch lokaal
+  verwijderd (volledig opgenomen in main). Niet gepusht.
