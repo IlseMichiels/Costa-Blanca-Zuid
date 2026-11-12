@@ -2401,3 +2401,7 @@ AI: dashboard.py: functie versnelling() (gedeeld door conclusie en
   gemiddelde blijft 12,9. AppTest: 0 fouten. Conclusie ongewijzigd.
   Open vraag: versnellingscijfers nu ook in een grafiek -> volgens rij 111
   uit de conclusie halen? Gecommit op main, niet gepusht.
+Ilse: "b, de versnelling is de kernboodschap" (beslissingslog rij 114,
+  uitzondering op rij 111). Conclusietekst blijft zoals ze is; enkel
+  commentaar in dashboard.py aangepast zodat de uitzondering in de code
+  terug te vinden is.

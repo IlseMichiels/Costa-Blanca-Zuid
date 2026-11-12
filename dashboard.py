@@ -154,7 +154,8 @@ def conclusies(basis, stijging, kwartalen):
     else:
         kust = f"Het duurste kustdistrict is **{duurste_dist}**."
 
-    # Enkel cijfers die je NIET uit een grafiek kan aflezen (rij 111): geen stijging 2019-2025 (staafdiagram),
+    # Enkel cijfers die je NIET uit een grafiek kan aflezen (rij 111), behalve de versnelling = kernboodschap
+    # (rij 114). Dus geen stijging 2019-2025 (staafdiagram),
     # geen aantallen of per 1.000 (kaartjes, verkopengrafiek). Wel: versnelling, stijging verkopen, corona.
     p = gem["prijs_m2_stijging_pct"]
     jaar_pct = basis.pivot(index="jaar", columns="gemeente", values="prijs_m2_jaar_pct")
