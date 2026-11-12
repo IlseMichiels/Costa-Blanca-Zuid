@@ -2429,3 +2429,7 @@ AI: gebouwd op branch filters-in-tab: filter_gemeentes() (st.pills in
   schakelaar leeg (-> absoluut), geen gemeentes (melding, conclusies
   blijven). Gecommit op filters-in-tab; main ongewijzigd. Nog niet in
   beslissingslog: eerst beslist Ilse of ze het houdt.
+Ilse: "a, zo is er meer ruimte voor de grafieken" (beslissingslog rij 116,
+  herziet rij 41)
+AI: filters-in-tab gemerged in main (--no-ff) en de proefbranch lokaal
+  verwijderd (volledig opgenomen in main). Niet gepusht.
