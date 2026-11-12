@@ -2,7 +2,7 @@
 
 Leest enkel de bewaarde CSV's uit data/verwerkt (rij 90 punt 4, rij 100), zodat het meteen opent.
 Volgorde op het scherm (rij 38, herzien in rij 106): titel + hoofdvraag · kerncijfers · kaart ·
-prijsgrafiek naast staafdiagram stijging · verkopengrafiek · coronagrafiek (uitklapblok) ·
+prijsgrafiek naast staafdiagram stijging · verkopengrafiek · coronagrafiek (gewoon zichtbaar, rij 108) ·
 conclusies + beperkingen.
 """
 import pandas as pd
@@ -340,32 +340,34 @@ def verkopengrafiek(basis, gekozen, maat):
 
 
 # --------------------------------------------------------------------------
-# 7 · Corona per kwartaal (E5) in een uitklapblok (rij 38, 79, 105.5)
+# 7 · Corona per kwartaal (E5) (rij 79, 105.5); geen uitklapblok meer (rij 108)
 # --------------------------------------------------------------------------
 def coronagrafiek(kwartalen, gekozen):
-    with st.expander("Corona van dichterbij: verkopen en vraagprijs per kwartaal"):
-        st.markdown('<div class="uitleg">De lichte band = 2e kwartaal 2020 (lockdown in Spanje). '
-                    'Enkel de 6 gemeentes; geen kwartaalcijfers per kustdistrict (rij 82).</div>',
-                    unsafe_allow_html=True)
-        perioden = list(dict.fromkeys(kwartalen["periode"]))
-        lockdown = perioden.index("2020 K2")
-        kol1, kol2 = st.columns(2, gap="large")
-        for kolom, (waarde, titel, fmt) in zip(
-                [kol1, kol2], [("aantal_verkopen", "Aantal verkopen", ",.0f"), ("prijs_m2", "Vraagprijs €/m²", ",.0f")]):
-            fig = go.Figure()
-            for g in gekozen:
-                df = kwartalen[kwartalen["gemeente"] == g]
-                fig.add_trace(go.Scatter(x=df["periode"], y=df[waarde], name=g, mode="lines",
-                                         line=dict(color=KLEUREN[g], width=2), connectgaps=False,
-                                         hovertemplate=f"%{{y:{fmt}}}"))
-            fig.add_vrect(x0=lockdown - 0.5, x1=lockdown + 0.5, fillcolor=ZAND, opacity=0.6, line_width=0,
-                          layer="below")
-            stijl(fig, hoogte=340)
-            fig.update_xaxes(tickangle=-45, tickvals=[p for p in perioden if p.endswith("K1")],
-                             ticktext=[p[:4] for p in perioden if p.endswith("K1")])
-            with kolom:
-                st.markdown(f"**{titel}**")
-                toon_figuur(fig)
+    """Gewoon zichtbaar, geen uitklapblok meer (rij 108, herziet rij 38)."""
+    st.markdown('<div class="sectie">Corona van dichterbij: verkopen en vraagprijs per kwartaal</div>',
+                unsafe_allow_html=True)
+    st.markdown('<div class="uitleg">De lichte band = 2e kwartaal 2020 (lockdown in Spanje). '
+                'Enkel de 6 gemeentes; geen kwartaalcijfers per kustdistrict (rij 82).</div>',
+                unsafe_allow_html=True)
+    perioden = list(dict.fromkeys(kwartalen["periode"]))
+    lockdown = perioden.index("2020 K2")
+    kol1, kol2 = st.columns(2, gap="large")
+    for kolom, (waarde, titel, fmt) in zip(
+            [kol1, kol2], [("aantal_verkopen", "Aantal verkopen", ",.0f"), ("prijs_m2", "Vraagprijs €/m²", ",.0f")]):
+        fig = go.Figure()
+        for g in gekozen:
+            df = kwartalen[kwartalen["gemeente"] == g]
+            fig.add_trace(go.Scatter(x=df["periode"], y=df[waarde], name=g, mode="lines",
+                                     line=dict(color=KLEUREN[g], width=2), connectgaps=False,
+                                     hovertemplate=f"%{{y:{fmt}}}"))
+        fig.add_vrect(x0=lockdown - 0.5, x1=lockdown + 0.5, fillcolor=ZAND, opacity=0.6, line_width=0,
+                      layer="below")
+        stijl(fig, hoogte=340)
+        fig.update_xaxes(tickangle=-45, tickvals=[p for p in perioden if p.endswith("K1")],
+                         ticktext=[p[:4] for p in perioden if p.endswith("K1")])
+        with kolom:
+            st.markdown(f"**{titel}**")
+            toon_figuur(fig)
 
 
 # --------------------------------------------------------------------------

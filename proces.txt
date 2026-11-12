@@ -2330,3 +2330,6 @@ Ilse: "zet bij het overzicht van alleen de districten tussen haakjes de
 AI: aanname: het staafdiagram stijging (groepje kustdistricten) is
   bedoeld. Labels nu "Arenales del Sol (Elche)" enz. (beslissingslog rij
   107). AppTest: 0 fouten.
+Ilse: "corona van dichterbij moet geen uitklapitem zijn. Gewoon tonen."
+AI: coronagrafiek nu gewone sectie met titel (beslissingslog rij 108,
+  herziet rij 38). AppTest: 0 fouten, 0 uitklapblokken, 6 grafieken.
