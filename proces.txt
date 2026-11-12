@@ -2338,3 +2338,17 @@ AI: PDF-STAP 5 (branch mergen). Gecontroleerd: werkmap schoon, 4 commits
   op dashboard, GitHub (origin/main) niets nieuws. Werkwijze: git switch
   main -> git merge --no-ff dashboard (aparte merge-commit, zodat de
   branch zichtbaar blijft in de geschiedenis) -> git push origin main.
+AI: merge gelukt zonder conflicten (merge-commit 928c847), gepusht:
+  GitHub main = lokaal main = 928c847. Gecontroleerd: dashboard.py,
+  .streamlit/config.toml en kwartalen.csv staan online. PDF-stap 5 KLAAR
+  (GitHub + branch gemerged). Branch "dashboard" bestaat nog lokaal, niet
+  op GitHub. Niet gecommit: enkel deze laatste regels van proces.txt.
+Ilse: "waarnaar verwijzen de v1 en v2 in de conclusie?"
+AI: uitleg: V1-V4 = de 4 analysevragen uit mission_statement_v2.md
+  (tabel "Analysevragen"). Opgemerkt: op het dashboard staan V1-V4
+  nergens uitgelegd -> 3 opties voorgesteld, wacht op Ilse.
+Ilse: "a" (codes V1-V4 weglaten, beslissingslog rij 109)
+AI: dashboard.py: "(V1, V2)", "(V4)", "(V3)", "(V4)" weg uit de titels van
+  de conclusies; koppeling als commentaarregel in de code bewaard.
+  AppTest: 0 fouten, geen V-codes meer op het scherm. Gecommit op main,
+  nog niet gepusht.

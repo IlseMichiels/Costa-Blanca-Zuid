@@ -155,21 +155,23 @@ def conclusies(basis, stijging, kwartalen):
     with links:
         st.markdown('<div class="sectie">Conclusies <span class="badge">CONCEPT · nog na te lezen</span></div>',
                     unsafe_allow_html=True)
+        # koppeling met de analysevragen van mission_statement_v2.md (niet op het scherm, rij 109):
+        # Prijsniveau = V1 + V2 · Prijsstijging = V4 · Verkopen = V3 · Corona = V4
         st.markdown(
-            f"- **Prijsniveau (V1, V2):** in {TOT} is **{duur}** het duurst ({heel(j_tot.loc[duur, 'prijs_m2'])} €/m²) "
+            f"- **Prijsniveau:** in {TOT} is **{duur}** het duurst ({heel(j_tot.loc[duur, 'prijs_m2'])} €/m²) "
             f"en **{goedkoop}** het goedkoopst ({heel(j_tot.loc[goedkoop, 'prijs_m2'])} €/m²). De andere vier liggen "
             f"dicht bij elkaar ({heel(midden.min())}–{heel(midden.max())} €/m²). Aan de kust is het duurder dan in de "
             f"hele gemeente: **{duurste_dist}** vraagt {heel(dist.loc[duurste_dist, 'prijs_m2_2025'])} €/m².\n"
-            f"- **Prijsstijging (V4):** alle zes stegen sterk, van {pct(p.min())} ({p.idxmin()}) tot "
+            f"- **Prijsstijging:** alle zes stegen sterk, van {pct(p.min())} ({p.idxmin()}) tot "
             f"{pct(p.max())} ({p.idxmax()}) tussen {VAN} en {TOT}. De stijging **versnelt**: in {VAN + 1}–{VAN + 2} "
             f"lag de stijging per jaar tussen {pct(vroeg.min().min())} en {pct(vroeg.max().max())}, "
             f"in {TOT - 1}–{TOT} tussen {pct(laat.min().min())} en {pct(laat.max().max())}.\n"
-            f"- **Verkopen (V3):** **{v.idxmax()}** verkoopt het meest ({heel(v.max())} woningen in {TOT}, "
+            f"- **Verkopen:** **{v.idxmax()}** verkoopt het meest ({heel(v.max())} woningen in {TOT}, "
             f"{komma(v1000.loc[v.idxmax()])} per 1.000 inwoners). {v1000.idxmin()} verkoopt absoluut veel "
             f"({heel(v.loc[v1000.idxmin()])}), maar per 1.000 inwoners het minst ({komma(v1000.min())}). "
             f"Het aantal verkopen steeg het sterkst in **{groei_v.index[0]}** ({pct(groei_v.iloc[0])}) en "
             f"**{groei_v.index[1]}** ({pct(groei_v.iloc[1])}).\n"
-            f"- **Corona (V4):** in het 2e kwartaal van 2020 (lockdown) zakte het aantal verkopen met "
+            f"- **Corona:** in het 2e kwartaal van 2020 (lockdown) zakte het aantal verkopen met "
             f"{komma(abs(lockdown), 0)} % tegenover een jaar eerder (6 gemeentes samen), over heel 2020 met "
             f"{komma(abs(jaar2020))} %. In 2021 lag het al {komma(jaar2021)} % hoger dan in 2019. De vraagprijs "
             f"bleef in 2020 nagenoeg gelijk ({pct(prijs2020.min())} tot {pct(prijs2020.max())})."
