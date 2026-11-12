@@ -2458,3 +2458,39 @@ AI: dashboard.py op main: STREEP per district (dash/dot/dashdot), legende
 Ilse: "commit en push"
 AI: werkmap was schoon, GitHub had niets nieuws. Deze regels gecommit en
   main gepusht.
+Ilse: "ruim de branch dashboard op"
+AI: nagekeken: 0 commits enkel op dashboard (volledig in main), branch
+  stond niet op GitHub. Lokaal verwijderd met git branch -d. Enkel main
+  blijft over. Deze regels nog niet gecommit.
+Ilse: "ik heb ondertussen als antwoord op mijn mail aan notariado een excel
+  ontvangen. zie PIN 4525.csv. Is dit bruikbare data? Wat is deze data?
+  Wat zou het betekenen voor heel ons project?"
+AI: bestand onderzocht (staat in projectmap + Downloads, identiek; niet in
+  git). 42 rijen = 6 gemeentes x 2019-2025, INE-codes = onze 6, geen lege
+  vakken, geen dubbels. Kolommen: anyo, municipio_cod_ine, municipio_desc,
+  compraventas, precio_m2, superficie_media, precio_medio; precio_m2 x
+  superficie_media = precio_medio (afwijking max 0,01 %).
+  Woningtype staat NIET in het bestand. Aanwijzingen voor "pisos de
+  segunda mano" (gevraagd in mail_notariaat.txt): minder verkopen dan
+  Ministerie (alle tweedehandswoningen): -13 % Elche tot -55 % Pilar
+  (veel huizen/villa's); oppervlakte 65-98 m2. Te bevestigen met de
+  antwoordmail.
+  Vergelijking: vraagprijs Idealista ligt 8,5 % (Santa Pola) tot 36,6 %
+  (Elche) boven de notarisprijs; Pilar 2019 +21 % -> 2025 +50 %.
+  Gevolgen: 2025 duurste Santa Pola (2.159) i.p.v. Pilar; stijging
+  2019-2025 Pilar +44,9 % i.p.v. +79,5 %, sterkst Santa Pola +64,6 %;
+  versnelling 2,1 -> 12,8 % = +10,7 pp (i.p.v. +12,9), Pilar +3,4 pp en
+  Orihuela +4,6 pp nauwelijks. Geen kustdistricten, geen kwartalen.
+  Rij 68: Notariaat vervangt Idealista als het op tijd antwoordt.
+  Opties voorgelegd + 2 vragen (woningtype in antwoordmail? mag het
+  publiek op GitHub?). Nog niets gewijzigd.
+Ilse: "onthoud deze vragen voor later. Ik stop nu"
+AI: open vragen Notariaat bewaard (geheugen + hier): 1 woningtype en
+  bronvermelding volgens de antwoordmail; 2 mag de data publiek op
+  GitHub? 3 keuze a (Notariaat = prijsbron, advies) / b (extra controle)
+  / c (niet gebruiken). PIN 4525.csv blijft ongecommit tot vraag 2
+  beantwoord is.
+STAND VAN ZAKEN 12/11: dashboard op tabblad 1 (main, GitHub cc6d6e7),
+  PDF-stap 5 klaar. Open: Notariaat (zie hierboven), conclusies goedkeuren
+  (CONCEPT), waaroms rij 105, 107-113, 117, 118; PDF-stap 6 (pytest) en
+  7 (deploy + requirements.txt).
