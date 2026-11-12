@@ -79,6 +79,20 @@ def lees(naam):
     return pl.lees_verwerkt(f"{naam}.csv")
 
 
+def versnelling(basis):
+    """Versnelling van de prijsstijging (rij 112, optie A), per gemeente.
+
+    toen = gemiddelde stijging per jaar in 2020-2021, nu = idem in 2024-2025, verschil in procentpunten.
+    Ontbreekt een jaar, dan blijft de waarde leeg: geen gemiddelde van wat er wel is (rij 40, 84).
+    Wordt gebruikt door de conclusie én de haltergrafiek, zodat beide altijd dezelfde cijfers tonen.
+    """
+    j = basis.pivot(index="jaar", columns="gemeente", values="prijs_m2_jaar_pct")
+    df = pd.DataFrame({"toen": j.loc[VAN + 1:VAN + 2].mean(skipna=False),
+                       "nu": j.loc[TOT - 1:TOT].mean(skipna=False)})
+    df["verschil"] = df["nu"] - df["toen"]
+    return df
+
+
 def data():
     basis = lees("basistabel")
     districten = lees("kustdistricten")
@@ -144,10 +158,9 @@ def conclusies(basis, stijging, kwartalen):
     # geen aantallen of per 1.000 (kaartjes, verkopengrafiek). Wel: versnelling, stijging verkopen, corona.
     p = gem["prijs_m2_stijging_pct"]
     jaar_pct = basis.pivot(index="jaar", columns="gemeente", values="prijs_m2_jaar_pct")
-    # versnelling (rij 112, optie A): gemiddelde jaarstijging per gemeente, daarna gemiddelde van de 6
-    # gemeentes (elke gemeente telt even zwaar); verschil in procentpunten, geen factor
-    vroeg = jaar_pct.loc[VAN + 1:VAN + 2].mean()
-    laat = jaar_pct.loc[TOT - 1:TOT].mean()
+    # versnelling (rij 112, optie A): per gemeente, daarna gemiddelde van de 6 (elke gemeente telt even zwaar)
+    vers = versnelling(basis)
+    vroeg, laat = vers["toen"], vers["nu"]
     overal = " Dat geldt voor elke gemeente." if (laat > vroeg).all() else ""
 
     v = j_tot["aantal_verkopen"]
@@ -332,6 +345,56 @@ def stijgingsgrafiek(stijging, gekozen):
 
 
 # --------------------------------------------------------------------------
+# 5b · Versnelling van de prijsstijging: haltergrafiek toen ↔ nu (rij 113)
+# --------------------------------------------------------------------------
+def versnellingsgrafiek(basis, gekozen):
+    a, b = f"{VAN + 1}–{VAN + 2}", f"{TOT - 1}–{TOT}"
+    st.markdown('<div class="sectie">Versnelling van de prijsstijging</div>', unsafe_allow_html=True)
+    st.markdown(f'<div class="uitleg">Gemiddelde stijging van de vraagprijs per jaar: open bolletje = {a} '
+                f'(toen), vol bolletje = {b} (nu). Hoe langer het lijntje, hoe sterker de versnelling; het getal '
+                'rechts = versnelling in procentpunten. Gesorteerd van sterkste naar zwakste versnelling. '
+                'De bovenste rij is het gemiddelde van alle 6 gemeentes, zoals in de conclusie.</div>',
+                unsafe_allow_html=True)
+    vers = versnelling(basis)
+    gem_naam = "<b>Gemiddelde 6 gemeentes</b>"
+    rijen = pd.concat([
+        pd.DataFrame([{**vers.mean().to_dict(), "kleur": BLAUW}], index=[gem_naam]),
+        vers.loc[gekozen].assign(kleur=[KLEUREN[g] for g in gekozen]).sort_values("verschil", ascending=False),
+    ])
+
+    def t(x, f):
+        return f(x) if pd.notna(x) else "geen data"
+
+    fig = go.Figure()
+    for naam, r in rijen.iterrows():         # grijs verbindingslijntje per rij
+        fig.add_trace(go.Scatter(x=[r["toen"], r["nu"]], y=[naam, naam], mode="lines", hoverinfo="skip",
+                                 line=dict(color="#C9CFD4", width=4), showlegend=False))
+    info = [f"<b>{n}</b><br>{a}: {t(r.toen, pct)} per jaar<br>{b}: {t(r.nu, pct)} per jaar"
+            f"<br>versnelling: {t(r.verschil, lambda x: pct(x).replace(' %', ' procentpunten'))}"
+            for n, r in rijen.iterrows()]
+    fig.add_trace(go.Scatter(x=rijen["toen"], y=rijen.index, mode="markers", name=f"{a} (toen)",
+                             marker=dict(size=14, color="white", line=dict(color=rijen["kleur"], width=3)),
+                             hovertext=info, hoverinfo="text", showlegend=False))
+    fig.add_trace(go.Scatter(x=rijen["nu"], y=rijen.index, mode="markers+text", name=f"{b} (nu)",
+                             marker=dict(size=14, color=rijen["kleur"], line=dict(color="white", width=2)),
+                             text=[t(v, lambda x: pct(x).replace(" %", " pp")) for v in rijen["verschil"]],
+                             textposition="middle right", textfont=dict(size=12, color="#3A4650"),
+                             hovertext=info, hoverinfo="text", showlegend=False))
+    # legende in neutraal grijs: open = toen, vol = nu
+    for naam, kleur in [(f"{a} (toen)", "white"), (f"{b} (nu)", "#5B6770")]:
+        fig.add_trace(go.Scatter(x=[None], y=[None], mode="markers", name=naam,
+                                 marker=dict(size=12, color=kleur, line=dict(color="#5B6770", width=2.5))))
+    fig.add_vline(x=0, line=dict(color="#9AA5AE", width=1, dash="dot"))
+    stijl(fig, hoogte=90 + 46 * len(rijen))
+    fig.update_layout(hovermode="closest")
+    xmin = min(0, rijen["toen"].min()) - 2
+    fig.update_xaxes(ticksuffix=" %", range=[xmin, rijen["nu"].max() + 6], showgrid=True, gridcolor="#EEF0F2",
+                     zeroline=False)
+    fig.update_yaxes(autorange="reversed", showgrid=False)
+    toon_figuur(fig)
+
+
+# --------------------------------------------------------------------------
 # 6 · Aantal verkopen (E4): absoluut of per 1.000 inwoners (rij 41)
 # --------------------------------------------------------------------------
 def verkopengrafiek(basis, gekozen, maat):
@@ -416,6 +479,7 @@ def toon():
             prijsgrafiek(basis, districten, gekozen)
         with rechts:
             stijgingsgrafiek(stijging, gekozen)
+        versnellingsgrafiek(basis, gekozen)
         verkopengrafiek(basis, gekozen, maat)
         coronagrafiek(kwartalen, gekozen)
     else:

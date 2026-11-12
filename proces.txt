@@ -2387,3 +2387,17 @@ AI: dashboard.py conclusies herschreven:
     door de code nagekeken; stijging verkopen % blijft.
   - Corona ongewijzigd (ook -2,8 % tot +3,3 %: staat in geen grafiek).
   AppTest: 0 fouten op beide tabbladen. Gecommit op main, niet gepusht.
+Ilse: "kan je die versnelling nog in beeld brengen?"
+AI: 3 grafiekvormen voorgesteld (halters 2020-21 vs 2024-25 / lijn
+  jaarstijging per jaar / staven versnelling in pp), plaats: eigen sectie
+  onder prijsgrafiek + stijging. Gevolg voor rij 111 gemeld (cijfers dan
+  ook in een grafiek). Wacht op keuze.
+Ilse: "a, dan zie ik het toen en nu" (beslissingslog rij 113)
+AI: dashboard.py: functie versnelling() (gedeeld door conclusie en
+  grafiek, skipna=False = niet opvullen) + versnellingsgrafiek()
+  (haltergrafiek) als eigen sectie onder prijsgrafiek + stijging.
+  Controle: cijfers in de grafiek = tabel van daarnet (Pilar +15,8 pp ...
+  Orihuela +9,0 pp, gemiddelde +12,9 pp); zonder Elche verdwijnt die rij,
+  gemiddelde blijft 12,9. AppTest: 0 fouten. Conclusie ongewijzigd.
+  Open vraag: versnellingscijfers nu ook in een grafiek -> volgens rij 111
+  uit de conclusie halen? Gecommit op main, niet gepusht.
