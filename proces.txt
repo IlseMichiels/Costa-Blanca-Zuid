@@ -2436,3 +2436,16 @@ AI: filters-in-tab gemerged in main (--no-ff) en de proefbranch lokaal
 Ilse: "commit en push"
 AI: werkmap was schoon, GitHub had niets nieuws. Deze regels gecommit en
   main gepusht naar GitHub.
+Ilse: "Misschien is het beter om daar waar we data over de kustdistricten
+  hebben, enkel de kustdistricten te tonen. Kan dat en hoe ziet het er
+  dan uit"
+AI: gevolgen berekend (enkel kust, 8 gebieden): duurste Arenales del Sol
+  3.150 (i.p.v. Pilar 3.053), goedkoopste El Altet 1.824 (i.p.v. Elche
+  1.690), sterkste versnelling El Altet +25,8 pp. Nadelen: enkel prijs per
+  district; Elche 3x in een gemiddelde; districten schommelen meer.
+  Opties a/b/c. Ilse koos b (schakelaar) -> proef gebouwd op branch
+  kust-schakelaar (AppTest 0 fouten).
+Ilse: "b" (proef weggooien, beslissingslog rij 117)
+AI: terug naar main, branch kust-schakelaar verwijderd (git branch -D).
+  App toont weer de versie van main. Ook de aparte lijnstijl per district
+  (bijkomend in de proef) is daarmee weg.
