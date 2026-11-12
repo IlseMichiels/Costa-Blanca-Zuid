@@ -2224,3 +2224,117 @@ AI: README.md aangemaakt: korte projectintro, overzichtstabel 5 bronnen
   (site blokkeert AI). Nog niet gecommit.
 Ilse: "commit en push naar GitHub"
 AI: README.md + proces.txt gecommit en gepusht naar origin/main.
+
+SESSIE 2026-11-12
+Ilse: "wat er nu in app.py staat is de data verkenning. Deze zou op een
+  tweede tabblad van de app moeten komen. Op de eerste tab van de app zou
+  een knappe moderne gebruikers interface moeten komen, waarin de data
+  mooi gepresenteerd wordt."
+AI: WAT IK NU DOE: nagekeken wat er al ligt. app.py = pijplijn (trechters,
+  stap 1-4 in uitklapblokken). Dashboardontwerp ligt vast in
+  beslissingslog rij 34-41 (E2-E8, volgorde rij 38, kaart rij 35-36,
+  filters rij 41) + rij 91-92 (kustdistricten lijntje + eigen stip).
+  Drempel 30 verkopen (rij 39) vervalt door rij 81.
+  Bibliotheken in syntra-ds: pydeck NIET aanwezig; plotly, folium,
+  altair 6.2.2, streamlit 1.64.0 wel. Geen requirements.txt (nodig bij
+  PDF-stap 7).
+  VOORSTEL: st.tabs met 2 tabbladen: "Dashboard" (nieuw, volgens rij 38)
+  en "Data en pijplijn" (huidige inhoud ongewijzigd). Dashboard leest de
+  bewaarde CSV's uit data/verwerkt (rij 90 punt 4) -> opent snel.
+  Kaart met plotly + OpenStreetMap-achtergrond (geen installatie nodig).
+  Eigen kleurthema in .streamlit/config.toml.
+  VRAGEN aan Ilse (wacht op antwoord, nog niets gebouwd):
+  1 git-branch "dashboard" (PDF-stap 5) / op main
+  2 kwartaaltabel E5: bewaren als kwartalen.csv (open punt rij 90.5) /
+    live berekenen (± 30 s wachten)
+  3 conclusies E7: AI schrijft concept met echte cijfers, Ilse keurt /
+    Ilse schrijft zelf, nu een lege plaats
+  4 kerncijfers E6: 4 tegels (duurste 2025, goedkoopste 2025, sterkste
+    prijsstijging, meeste verkopen per 1.000 inw. 2025) / per gemeente
+    een kaartje
+  5 staafdiagram E3: kustdistricten mee (andere kleur) / enkel 6 gemeentes
+  6 kleur: Middellandse Zee (diepblauw + zandkleur) / iets anders
+Ilse: "stel me de vragen één voor één"
+AI: vragen worden nu één per keer gesteld. Vraag 1 (git-branch) gesteld.
+Ilse: vraag 1 -> "a, dan heb ik stap 5 meteen gedaan" (beslissingslog rij 99)
+AI: branch "dashboard" aangemaakt (git switch -c dashboard) en actief.
+  Nog niet gepusht. Vraag 2 (kwartaaltabel E5) gesteld.
+Ilse: vraag 2 -> "a, dan opent het dashboard meteen" (beslissingslog rij 100)
+AI: nog niets gebouwd (eerst alle vragen). Vraag 3 (conclusies E7) gesteld.
+Ilse: vraag 3 -> "a, dan gaat het sneller en lees ik alles kritisch na"
+  (beslissingslog rij 101)
+AI: Vraag 4 (kerncijfers E6) gesteld.
+Ilse: vraag 4 -> "c, zo krijgt elke gemeente evenveel aandacht"
+  (beslissingslog rij 102)
+AI: Vraag 5 (kustdistricten in staafdiagram E3) gesteld.
+Ilse: vraag 5 -> "c, zo blijft het overzichtelijk en zie ik de kust apart"
+  (beslissingslog rij 103)
+AI: Vraag 6 (kleuren) gesteld.
+Ilse: vraag 6 -> "a, dat past bij de kust en oogt rustig" (beslissingslog rij 104)
+AI: alle 6 vragen beantwoord. Nagekeken: st.tabs(on_change="rerun") in
+  streamlit 1.64 -> enkel het open tabblad draait (anders wacht het
+  dashboard toch 30 s op de pijplijn). Basistabel en kustdistricten:
+  0 lege prijzen/verkopen 2019-2025. Bouwplan + 8 kleinere aannames
+  voorgelegd; wacht op akkoord.
+Ilse: "akkoord" (bouwplan + 8 aannames, beslissingslog rij 105)
+AI: WAT IK NU DOE: bouwen. Eerst pipeline.py (kwartalen.csv), dan thema,
+  dan app.py met 2 tabbladen.
+AI: GEBOUWD op branch dashboard:
+  - pipeline.py: nieuwe pure functie kwartaal_tabel (vast raster 6 x 28
+    kwartalen + left join prijs en verkopen, cf. rij 86); voer_uit geeft
+    ze mee -> data/verwerkt/kwartalen.csv (168 rijen, 0 lege vakken).
+    Andere 3 CSV's ongewijzigd. Controle: Torrevieja 2020 K1 891 ->
+    K2 362 verkopen.
+  - .streamlit/config.toml: thema Middellandse Zee (rij 104).
+  - dashboard.py (nieuw): tabblad 1 volgens rij 38: hero met hoofdvraag,
+    conclusies (CONCEPT, cijfers berekend uit de CSV's) + beperkingen,
+    6 kaartjes noord->zuid, kaart (plotly, OpenStreetMap/Carto-achter-
+    grond, prijs 2025 als label, tooltip), prijsgrafiek (stippellijn =
+    kustdistrict) naast staafdiagram 2 groepjes, verkopengrafiek
+    (absoluut / per 1.000), corona per kwartaal in uitklapblok (band
+    2020 K2). Zijbalk: gemeentes aan/uit + absoluut/per 1.000.
+    Gemeentekleuren: 6 kleuren uit een kleurenblind-veilig palet,
+    gecontroleerd met een validatiescript (alles PASS; 3 kleuren weinig
+    contrast op wit -> legende + tooltip als ondersteuning).
+  - app.py: st.tabs(["Dashboard", "Data en pijplijn"], on_change=
+    "rerun"): enkel het open tabblad draait. Oude inhoud ongewijzigd in
+    toon_pijplijn(); enkel titel -> "Data en pijplijn" en de zin "het
+    dashboard volgt" -> "staat op het eerste tabblad".
+  CONTROLE (Streamlit AppTest): 0 fouten op beide tabbladen, bij
+  uitvinken van gemeentes, bij niets gekozen en bij per 1.000 inwoners.
+  Dashboard opent in ± 3 s zonder de pijplijn; pijplijn pas bij klikken.
+  Conclusietekst nagelezen: zin "bleef bijna gelijk (-2,8 % tot +7,5 %)"
+  was te sterk -> feitelijk herschreven (2020-2021 tussen -2,8 % en
+  +7,5 % per jaar, 2024-2025 tussen +9,0 % en +18,7 %).
+  Kleine fout van mij onderweg: testbestand conclusies.txt even in de
+  projectmap geschreven -> meteen verwijderd.
+  NOG TE DOEN door Ilse: dashboard zelf bekijken (streamlit run app.py),
+  conclusies kritisch nalezen (rij 101), waaroms invullen. Nog niet
+  gemerged en niet gepusht.
+Ilse: "start de app"
+AI: poort 8501 bezet door Ilse's eigen Streamlit (gestart 08:55, oude
+  versie) -> niet gesloten zonder te vragen. Nieuwe versie gestart op
+  http://localhost:8502 (achtergrond), gezondheidscontrole "ok".
+Ilse: "zet de conclusie toch onderaan"
+AI: vraag gesteld: beperkingen mee naar onderaan (b) of bovenaan laten (a)?
+Ilse: "b dat is veel overzichtelijker" (beslissingslog rij 106, herziet
+  rij 38)
+AI: dashboard.py: conclusies + beperkingen na de coronagrafiek, met een
+  scheidingslijn. Blijven zichtbaar als alle gemeentes uitgevinkt zijn
+  (rij 41). AppTest: 0 fouten, conclusies zichtbaar bij niets gekozen.
+Ilse: "sluit de oude app"
+AI: oude Streamlit-app (PID 1344, poort 8501) afgesloten na controle dat
+  het echt Streamlit was; nieuwe app op 8502 draait verder.
+Ilse: "zet bij het overzicht van alleen de districten tussen haakjes de
+  gemeente"
+AI: aanname: het staafdiagram stijging (groepje kustdistricten) is
+  bedoeld. Labels nu "Arenales del Sol (Elche)" enz. (beslissingslog rij
+  107). AppTest: 0 fouten.
+Ilse: "corona van dichterbij moet geen uitklapitem zijn. Gewoon tonen."
+AI: coronagrafiek nu gewone sectie met titel (beslissingslog rij 108,
+  herziet rij 38). AppTest: 0 fouten, 0 uitklapblokken, 6 grafieken.
+Ilse: "merge de branch naar main en push naar GitHub"
+AI: PDF-STAP 5 (branch mergen). Gecontroleerd: werkmap schoon, 4 commits
+  op dashboard, GitHub (origin/main) niets nieuws. Werkwijze: git switch
+  main -> git merge --no-ff dashboard (aparte merge-commit, zodat de
+  branch zichtbaar blijft in de geschiedenis) -> git push origin main.

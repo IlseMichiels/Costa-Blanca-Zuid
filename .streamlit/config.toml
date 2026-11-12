@@ -1,0 +1,9 @@
+# Kleurthema Middellandse Zee (beslissingslog rij 104)
+# Streamlit leest dit bestand automatisch bij het starten van de app.
+[theme]
+base = "light"
+primaryColor = "#0B4F6C"              # diepblauw: knoppen, vinkjes, actief tabblad
+backgroundColor = "#FFFFFF"           # witte achtergrond
+secondaryBackgroundColor = "#F6F1E7"  # lichte zandkleur: zijbalk, invulvakken
+textColor = "#1F2A33"
+font = "sans serif"

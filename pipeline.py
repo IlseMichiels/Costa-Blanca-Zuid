@@ -445,7 +445,9 @@ def voer_uit():
     basistabel4 = stap4_basistabel(stap3[1]["basistabel"])
     districten4 = stap4_districten(districten)
     stijging = stijging_tabel(basistabel4, districten4)
-    return stap2, controle, stap3, {"basistabel": basistabel4, "kustdistricten": districten4, "stijging": stijging}
+    kwartalen = kwartaal_tabel(stap2["idealista"][1]["kwartalen"], stap2["verkopen"][1]["kwartalen"])  # rij 100
+    return stap2, controle, stap3, {"basistabel": basistabel4, "kustdistricten": districten4, "stijging": stijging,
+                                    "kwartalen": kwartalen}
 
 
 # --------------------------------------------------------------------------
@@ -514,6 +516,24 @@ def stijging_tabel(basistabel, districten):
     dist.insert(0, "soort", "kustdistrict")
     uit = pd.concat([gemeentes, dist], ignore_index=True)
     return uit[["soort", "gemeente", "district", *[k for k in gemeentes.columns if k not in ("soort", "gemeente", "district")]]]
+
+
+def kwartaal_tabel(prijs_kwartalen, verkopen_kwartalen):
+    """Kwartaaltabel voor de coronagrafiek E5 (rij 79, 82, 100): 6 gemeentes × 28 kwartalen = 168 rijen.
+
+    Zelfde werkwijze als de basistabel (rij 86): eerst een vast raster, dan elke bron met een left join,
+    zodat er geen kwartaal stil verdwijnt; ontbreekt een cijfer, dan blijft het vak leeg (rij 40).
+    Kolommen: ine_code | gemeente | jaar | kwartaal | periode (bv. '2020 K2') | prijs_m2 | aantal_verkopen.
+    """
+    sleutels = ["ine_code", "jaar", "kwartaal"]
+    kwartalen = pd.DataFrame([(j, k) for j in range(PERIODE[0], PERIODE[1] + 1) for k in range(1, 5)],
+                             columns=["jaar", "kwartaal"])
+    df = GEMEENTEN[["ine_code", "gemeente"]].merge(kwartalen, how="cross")
+    df = df.merge(prijs_kwartalen[[*sleutels, "prijs_m2"]], on=sleutels, how="left", validate="one_to_one")
+    df = df.merge(verkopen_kwartalen[[*sleutels, "aantal_verkopen"]], on=sleutels, how="left",
+                  validate="one_to_one")
+    df.insert(4, "periode", df["jaar"].astype(str) + " K" + df["kwartaal"].astype(str))
+    return df
 
 
 if __name__ == "__main__":
