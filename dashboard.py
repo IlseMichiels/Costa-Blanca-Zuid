@@ -154,9 +154,9 @@ def conclusies(basis, stijging, kwartalen):
     else:
         kust = f"Het duurste kustdistrict is **{duurste_dist}**."
 
-    # Enkel cijfers die je NIET uit een grafiek kan aflezen (rij 111), behalve de versnelling = kernboodschap
-    # (rij 114). Dus geen stijging 2019-2025 (staafdiagram),
-    # geen aantallen of per 1.000 (kaartjes, verkopengrafiek). Wel: versnelling, stijging verkopen, corona.
+    # Geen cijfers die je uit de grafieken kan aflezen (rij 111), ook geen procenten bij Verkopen en Corona
+    # (rij 115). Enige uitzondering: de versnelling = kernboodschap (rij 114).
+    # De zinnen in woorden worden hieronder door de code nagekeken, zodat ze niet stil fout worden.
     p = gem["prijs_m2_stijging_pct"]
     jaar_pct = basis.pivot(index="jaar", columns="gemeente", values="prijs_m2_jaar_pct")
     # versnelling (rij 112, optie A): per gemeente, daarna gemiddelde van de 6 (elke gemeente telt even zwaar)
@@ -173,12 +173,21 @@ def conclusies(basis, stijging, kwartalen):
                  "1.000 inwoners.")
     groei_v = gem["aantal_verkopen_stijging_pct"].sort_values(ascending=False)
 
+    # corona: daling K2 2020 t.o.v. K2 2019 per gemeente; herstel 2021 t.o.v. 2019 (6 gemeentes samen)
+    kw = kwartalen.pivot(index="periode", columns="gemeente", values="aantal_verkopen")
+    daling = (kw.loc["2020 K2"] / kw.loc["2019 K2"] - 1) * 100
+    if (daling < -25).all():
+        lockdown = "zakte het aantal verkopen sterk, in alle 6 gemeentes"
+    elif (daling < 0).all():
+        lockdown = "zakte het aantal verkopen in alle 6 gemeentes"
+    else:
+        lockdown = "zakte het aantal verkopen in de meeste gemeentes"
     per_jaar = basis.groupby("jaar")["aantal_verkopen"].sum()
-    per_kw = kwartalen.groupby("periode")["aantal_verkopen"].sum()
-    lockdown = (per_kw["2020 K2"] / per_kw["2019 K2"] - 1) * 100
-    jaar2020 = (per_jaar[2020] / per_jaar[2019] - 1) * 100
-    jaar2021 = (per_jaar[2021] / per_jaar[2019] - 1) * 100
+    herstel = (" In 2021 lag het aantal al hoger dan in 2019." if per_jaar[2021] > per_jaar[2019]
+               else " In 2021 lag het aantal nog lager dan in 2019.")
     prijs2020 = jaar_pct.loc[2020]
+    prijs_corona = ("De vraagprijs bleef in 2020 nagenoeg gelijk." if prijs2020.abs().max() <= 5
+                    else "De vraagprijs bewoog in 2020 wel.")
 
     links, rechts = st.columns([3, 2], gap="large")
     with links:
@@ -194,12 +203,9 @@ def conclusies(basis, stijging, kwartalen):
             f"in {VAN + 1}–{VAN + 2} naar {pct(laat.mean())} per jaar in {TOT - 1}–{TOT}, dat is "
             f"{komma(laat.mean() - vroeg.mean())} procentpunten sneller.{overal}\n"
             f"- **Verkopen:** {meest} **{v1000.idxmin()}** verkoopt absoluut veel, maar per 1.000 inwoners "
-            f"het minst. Het aantal verkopen steeg het sterkst in **{groei_v.index[0]}** ({pct(groei_v.iloc[0])}) en "
-            f"**{groei_v.index[1]}** ({pct(groei_v.iloc[1])}).\n"
-            f"- **Corona:** in het 2e kwartaal van 2020 (lockdown) zakte het aantal verkopen met "
-            f"{komma(abs(lockdown), 0)} % tegenover een jaar eerder (6 gemeentes samen), over heel 2020 met "
-            f"{komma(abs(jaar2020))} %. In 2021 lag het al {komma(jaar2021)} % hoger dan in 2019. De vraagprijs "
-            f"bleef in 2020 nagenoeg gelijk ({pct(prijs2020.min())} tot {pct(prijs2020.max())})."
+            f"het minst. Het aantal verkopen steeg het sterkst in **{groei_v.index[0]}** en "
+            f"**{groei_v.index[1]}**.\n"
+            f"- **Corona:** in het 2e kwartaal van 2020 (lockdown) {lockdown}.{herstel} {prijs_corona}"
         )
     with rechts:
         st.markdown('<div class="sectie">Beperkingen</div>', unsafe_allow_html=True)

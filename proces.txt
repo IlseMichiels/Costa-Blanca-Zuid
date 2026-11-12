@@ -2405,3 +2405,10 @@ Ilse: "b, de versnelling is de kernboodschap" (beslissingslog rij 114,
   uitzondering op rij 111). Conclusietekst blijft zoals ze is; enkel
   commentaar in dashboard.py aangepast zodat de uitzondering in de code
   terug te vinden is.
+Ilse: "verkopen en corona: vermeld geen procenten bij de conclusie, dat
+  zien we al in de grafieken" (beslissingslog rij 115)
+AI: kanttekening gegeven: de precieze % stonden niet letterlijk in een
+  grafiek, de beweging wel. Uitgevoerd: procenten weg; zinnen in woorden
+  door de code nagekeken ("sterk" = elke gemeente meer dan 25 % lager in
+  K2 2020 t.o.v. K2 2019; "nagenoeg gelijk" = alle binnen +-5 %).
+  AppTest: 0 fouten. Gecommit op main, niet gepusht.
