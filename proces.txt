@@ -2311,3 +2311,14 @@ AI: GEBOUWD op branch dashboard:
   NOG TE DOEN door Ilse: dashboard zelf bekijken (streamlit run app.py),
   conclusies kritisch nalezen (rij 101), waaroms invullen. Nog niet
   gemerged en niet gepusht.
+Ilse: "start de app"
+AI: poort 8501 bezet door Ilse's eigen Streamlit (gestart 08:55, oude
+  versie) -> niet gesloten zonder te vragen. Nieuwe versie gestart op
+  http://localhost:8502 (achtergrond), gezondheidscontrole "ok".
+Ilse: "zet de conclusie toch onderaan"
+AI: vraag gesteld: beperkingen mee naar onderaan (b) of bovenaan laten (a)?
+Ilse: "b dat is veel overzichtelijker" (beslissingslog rij 106, herziet
+  rij 38)
+AI: dashboard.py: conclusies + beperkingen na de coronagrafiek, met een
+  scheidingslijn. Blijven zichtbaar als alle gemeentes uitgevinkt zijn
+  (rij 41). AppTest: 0 fouten, conclusies zichtbaar bij niets gekozen.

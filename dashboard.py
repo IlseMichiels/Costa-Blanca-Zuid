@@ -1,8 +1,9 @@
 """Tabblad 1 van de app: het dashboard (ontwerp: beslissingslog rij 34-41, 91-92, 99-105).
 
 Leest enkel de bewaarde CSV's uit data/verwerkt (rij 90 punt 4, rij 100), zodat het meteen opent.
-Volgorde op het scherm (rij 38): titel + hoofdvraag · conclusies + beperkingen · kerncijfers ·
-kaart · prijsgrafiek naast staafdiagram stijging · verkopengrafiek · coronagrafiek (uitklapblok).
+Volgorde op het scherm (rij 38, herzien in rij 106): titel + hoofdvraag · kerncijfers · kaart ·
+prijsgrafiek naast staafdiagram stijging · verkopengrafiek · coronagrafiek (uitklapblok) ·
+conclusies + beperkingen.
 """
 import pandas as pd
 import plotly.graph_objects as go
@@ -390,19 +391,22 @@ def toon():
     gekozen, maat = filters()
 
     titel()
-    conclusies(basis, stijging, kwartalen)
     kaartjes(basis, stijging)
 
-    if not gekozen:
+    if gekozen:
+        kaart(basis, districten, stijging, gekozen)
+        links, rechts = st.columns([3, 2], gap="large")
+        with links:
+            prijsgrafiek(basis, districten, gekozen)
+        with rechts:
+            stijgingsgrafiek(stijging, gekozen)
+        verkopengrafiek(basis, gekozen, maat)
+        coronagrafiek(kwartalen, gekozen)
+    else:
         st.info("Vink in de zijbalk minstens één gemeente aan om de kaart en de grafieken te zien.")
-        return
-    kaart(basis, districten, stijging, gekozen)
-    links, rechts = st.columns([3, 2], gap="large")
-    with links:
-        prijsgrafiek(basis, districten, gekozen)
-    with rechts:
-        stijgingsgrafiek(stijging, gekozen)
-    verkopengrafiek(basis, gekozen, maat)
-    coronagrafiek(kwartalen, gekozen)
+
+    # conclusies + beperkingen onderaan (rij 106, herziet rij 38); altijd alle 6 gemeentes (rij 41)
+    st.divider()
+    conclusies(basis, stijging, kwartalen)
     st.caption("Bronnen en werkwijze: zie het tabblad *Data en pijplijn* en README.md. "
                "Elke keuze verwijst naar een rij in beslissingslog.md.")
