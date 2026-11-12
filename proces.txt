@@ -2322,3 +2322,11 @@ Ilse: "b dat is veel overzichtelijker" (beslissingslog rij 106, herziet
 AI: dashboard.py: conclusies + beperkingen na de coronagrafiek, met een
   scheidingslijn. Blijven zichtbaar als alle gemeentes uitgevinkt zijn
   (rij 41). AppTest: 0 fouten, conclusies zichtbaar bij niets gekozen.
+Ilse: "sluit de oude app"
+AI: oude Streamlit-app (PID 1344, poort 8501) afgesloten na controle dat
+  het echt Streamlit was; nieuwe app op 8502 draait verder.
+Ilse: "zet bij het overzicht van alleen de districten tussen haakjes de
+  gemeente"
+AI: aanname: het staafdiagram stijging (groepje kustdistricten) is
+  bedoeld. Labels nu "Arenales del Sol (Elche)" enz. (beslissingslog rij
+  107). AppTest: 0 fouten.

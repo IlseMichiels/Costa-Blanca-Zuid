@@ -295,7 +295,8 @@ def stijgingsgrafiek(stijging, gekozen):
     s = stijging[stijging["gemeente"].isin(gekozen)]
     gem = s[s["soort"] == "gemeente"].sort_values("prijs_m2_stijging_pct", ascending=False, na_position="last")
     dist = s[s["soort"] == "kustdistrict"].sort_values("prijs_m2_stijging_pct", ascending=False, na_position="last")
-    groepen = [(gem, gem["gemeente"], "Gemeentes", 1.0), (dist, dist["district"], "Kustdistricten", 0.7)]
+    dist_namen = dist["district"] + " (" + dist["gemeente"] + ")"          # gemeente tussen haakjes (rij 107)
+    groepen = [(gem, gem["gemeente"], "Gemeentes", 1.0), (dist, dist_namen, "Kustdistricten", 0.7)]
     groepen = [gr for gr in groepen if len(gr[0])]
     fig = make_subplots(rows=len(groepen), cols=1, shared_xaxes=True, vertical_spacing=0.12,
                         row_heights=[len(gr[0]) for gr in groepen], subplot_titles=[gr[2] for gr in groepen])
