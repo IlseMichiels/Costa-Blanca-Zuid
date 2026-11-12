@@ -2433,3 +2433,6 @@ Ilse: "a, zo is er meer ruimte voor de grafieken" (beslissingslog rij 116,
   herziet rij 41)
 AI: filters-in-tab gemerged in main (--no-ff) en de proefbranch lokaal
   verwijderd (volledig opgenomen in main). Niet gepusht.
+Ilse: "commit en push"
+AI: werkmap was schoon, GitHub had niets nieuws. Deze regels gecommit en
+  main gepusht naar GitHub.
