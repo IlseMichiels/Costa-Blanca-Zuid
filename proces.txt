@@ -2333,3 +2333,8 @@ AI: aanname: het staafdiagram stijging (groepje kustdistricten) is
 Ilse: "corona van dichterbij moet geen uitklapitem zijn. Gewoon tonen."
 AI: coronagrafiek nu gewone sectie met titel (beslissingslog rij 108,
   herziet rij 38). AppTest: 0 fouten, 0 uitklapblokken, 6 grafieken.
+Ilse: "merge de branch naar main en push naar GitHub"
+AI: PDF-STAP 5 (branch mergen). Gecontroleerd: werkmap schoon, 4 commits
+  op dashboard, GitHub (origin/main) niets nieuws. Werkwijze: git switch
+  main -> git merge --no-ff dashboard (aparte merge-commit, zodat de
+  branch zichtbaar blijft in de geschiedenis) -> git push origin main.
