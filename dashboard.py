@@ -47,10 +47,21 @@ CSS = """
 .kaartje .eenheid {font-size: .8rem; color: #5B6770; font-weight: 400;}
 .kaartje .regel {font-size: .85rem; color: #3A4650; margin-top: .45rem;}
 .kaartje .regel b {color: #1F2A33;}
-.badge {display: inline-block; background: #E9D8B4; color: #5A4413; font-size: .72rem; font-weight: 700;
-        padding: .12rem .55rem; border-radius: 999px; letter-spacing: .05em; vertical-align: middle;}
+.kaartje.klein {padding: .6rem .8rem; border-top-width: 3px;}
+.kaartje.klein .naam {font-size: .85rem; margin-bottom: .2rem;}
+.kaartje.klein .prijs {font-size: 1.25rem;}
+.kaartje.klein .regel {font-size: .8rem; margin-top: .3rem;}
+.subkop {font-size: .9rem; font-weight: 600; color: #5B6770; margin: .4rem 0 .2rem 0;}
 .sectie {font-size: 1.25rem; font-weight: 600; color: #0B4F6C; margin: 1.2rem 0 .1rem 0;}
 .uitleg {font-size: .88rem; color: #5B6770; margin-bottom: .4rem;}
+.legende {display: flex; flex-wrap: wrap; gap: .4rem 1.4rem; align-items: center; font-size: .82rem;
+          color: #5B6770; margin: -.3rem 0 .6rem 0;}
+.legende span {display: inline-flex; align-items: center; gap: .4rem;}
+.legende .stip {display: inline-block; border-radius: 50%; background: #9AA5AE; border: 2px solid #FFFFFF;
+                box-shadow: 0 0 0 1px #C9CFD4;}
+.legende .stip.groot {width: 18px; height: 18px;}
+.legende .stip.klein {width: 11px; height: 11px;}
+.legende b {color: #1F2A33;}
 </style>
 """
 
@@ -144,17 +155,27 @@ def titel():
 # 2 · Conclusies en beperkingen (E7) — altijd alle 6 gemeentes (rij 41)
 # --------------------------------------------------------------------------
 def conclusies(basis, stijging, kwartalen):
-    """Concepttekst (rij 101): de cijfers worden uit de data berekend, de zinnen zijn een voorstel."""
+    """Conclusies (rij 101, goedgekeurd in rij 120): de cijfers worden uit de data berekend."""
     j_tot = basis[basis["jaar"] == TOT].set_index("gemeente")
     gem = stijging[stijging["soort"] == "gemeente"].set_index("gemeente")
     dist = stijging[stijging["soort"] == "kustdistrict"].set_index("district")
     duur, goedkoop = j_tot["prijs_m2"].idxmax(), j_tot["prijs_m2"].idxmin()
     duurste_dist = dist["prijs_m2_2025"].idxmax()
     # geen bedragen in €/m² in de tekst: die staan al in de grafieken (rij 110)
-    if dist.loc[duurste_dist, "prijs_m2_2025"] > j_tot["prijs_m2"].max():
-        kust = f"**{duurste_dist}** is zelfs duurder dan elke gemeente als geheel."
+    # zin van Ilse (rij 128) enkel als de data hem bevestigt: duurste district ligt in de goedkoopste gemeente,
+    # is duurder dan elke gemeente, en elk kustdistrict van die gemeente is duurder dan de gemeente als geheel
+    kust_goedkoop = dist[dist["gemeente"] == goedkoop]["prijs_m2_2025"]
+    if (duurste_dist in kust_goedkoop.index
+            and dist.loc[duurste_dist, "prijs_m2_2025"] > j_tot["prijs_m2"].max()
+            and (kust_goedkoop > j_tot.loc[goedkoop, "prijs_m2"]).all()):
+        prijsniveau = (f"**{goedkoop}** lijkt het goedkoopste, maar **{duurste_dist}** is duurder dan elke gemeente "
+                       f"als geheel. De kuststreek van {goedkoop} scoort beter dan het binnenland van {goedkoop}.")
+    elif dist.loc[duurste_dist, "prijs_m2_2025"] > j_tot["prijs_m2"].max():   # vroegere tekst als terugval
+        prijsniveau = (f"**{goedkoop}** het goedkoopst. De andere vier liggen dicht bij elkaar. "
+                       f"**{duurste_dist}** is zelfs duurder dan elke gemeente als geheel.")
     else:
-        kust = f"Het duurste kustdistrict is **{duurste_dist}**."
+        prijsniveau = (f"**{goedkoop}** het goedkoopst. De andere vier liggen dicht bij elkaar. "
+                       f"Het duurste kustdistrict is **{duurste_dist}**.")
 
     # Geen cijfers die je uit de grafieken kan aflezen (rij 111), ook geen procenten bij Verkopen en Corona
     # (rij 115). Enige uitzondering: de versnelling = kernboodschap (rij 114).
@@ -193,13 +214,11 @@ def conclusies(basis, stijging, kwartalen):
 
     links, rechts = st.columns([3, 2], gap="large")
     with links:
-        st.markdown('<div class="sectie">Conclusies <span class="badge">CONCEPT · nog na te lezen</span></div>',
-                    unsafe_allow_html=True)
+        st.markdown('<div class="sectie">Conclusies</div>', unsafe_allow_html=True)
         # koppeling met de analysevragen van mission_statement_v2.md (niet op het scherm, rij 109):
         # Prijsniveau = V1 + V2 · Prijsstijging = V4 · Verkopen = V3 · Corona = V4
         st.markdown(
-            f"- **Prijsniveau:** in {TOT} is **{duur}** het duurst en **{goedkoop}** het goedkoopst. De andere vier "
-            f"liggen dicht bij elkaar. {kust}\n"
+            f"- **Prijsniveau:** in {TOT} is **{duur}** het duurst. {prijsniveau}\n"
             f"- **Prijsstijging:** alle zes stegen sterk tussen {VAN} en {TOT}, het sterkst in **{p.idxmax()}**, "
             f"het minst in **{p.idxmin()}**. De stijging **versnelt**: van gemiddeld {pct(vroeg.mean())} per jaar "
             f"in {VAN + 1}–{VAN + 2} naar {pct(laat.mean())} per jaar in {TOT - 1}–{TOT}, dat is "
@@ -224,12 +243,14 @@ def conclusies(basis, stijging, kwartalen):
 
 
 # --------------------------------------------------------------------------
-# 3 · Kerncijfers (E6): één kaartje per gemeente (rij 102) — veranderen niet mee met de filters
+# 3 · Kerncijfers (E6): één kaartje per gemeente (rij 102) + een rij kleinere kaartjes per
+#     kustdistrict — veranderen niet mee met de filters
 # --------------------------------------------------------------------------
-def kaartjes(basis, stijging):
+def kaartjes(basis, districten, stijging):
     st.markdown(f'<div class="sectie">Kerncijfers {TOT}</div>', unsafe_allow_html=True)
     j_tot = basis[basis["jaar"] == TOT].set_index("gemeente")
     gem = stijging[stijging["soort"] == "gemeente"].set_index("gemeente")
+    st.markdown('<div class="subkop">Volledige gemeentes</div>', unsafe_allow_html=True)
     kolommen = st.columns(len(VOLGORDE))
     for kolom, g in zip(kolommen, VOLGORDE):
         prijs = j_tot.loc[g, "prijs_m2"]
@@ -244,8 +265,30 @@ def kaartjes(basis, stijging):
                 f"""<div class="kaartje" style="--kleur: {KLEUREN[g]}">
                 <div class="naam">{g}</div>
                 <div class="prijs">{prijs_txt}</div>
-                <div class="regel"><b>{groei_txt}</b> sinds {VAN}</div>
-                <div class="regel"><b>{per1000_txt}</b> verkopen per 1.000 inw.</div>
+                <div class="regel"><b>{groei_txt}</b> prijsstijging sinds {VAN}</div>
+                <div class="regel"><b>{per1000_txt}</b> verkochte woningen per 1.000 inwoners</div>
+                </div>""",
+                unsafe_allow_html=True,
+            )
+
+    # tweede rij: de 4 kustdistricten, in de kleur van hun gemeente (rij 104); enkel vraagprijs,
+    # want verkopen en inwoners bestaan niet per district
+    st.markdown('<div class="subkop">Kustdistricten · enkel vraagprijs, geen verkopen per district</div>',
+                unsafe_allow_html=True)
+    d_tot = districten[districten["jaar"] == TOT].set_index("district")
+    dist = stijging[stijging["soort"] == "kustdistrict"].set_index("district")
+    kolommen = st.columns(len(VOLGORDE))          # zelfde kolombreedte als de rij erboven
+    for kolom, (dnaam, r) in zip(kolommen, dist.iterrows()):
+        prijs = d_tot["prijs_m2"].get(dnaam)
+        groei = r["prijs_m2_stijging_pct"]
+        prijs_txt = f'{heel(prijs)} <span class="eenheid">€/m²</span>' if pd.notna(prijs) else "geen data"
+        groei_txt = pct(groei) if pd.notna(groei) else "geen data"
+        with kolom:
+            st.markdown(
+                f"""<div class="kaartje klein" style="--kleur: {KLEUREN[r['gemeente']]}">
+                <div class="naam">{dnaam} <span class="eenheid">({r['gemeente']})</span></div>
+                <div class="prijs">{prijs_txt}</div>
+                <div class="regel"><b>{groei_txt}</b> prijsstijging sinds {VAN}</div>
                 </div>""",
                 unsafe_allow_html=True,
             )
@@ -254,11 +297,23 @@ def kaartjes(basis, stijging):
 # --------------------------------------------------------------------------
 # 4 · Kaart (E8): stip per gemeente + kleinere stip per kustdistrict (rij 35, 36, 91, 92)
 # --------------------------------------------------------------------------
-def kaart(basis, districten, stijging, gekozen):
+def kaart_kop():
+    """Kop van de kaart; de gemeentefilter staat erboven (rij 125)."""
     st.markdown('<div class="sectie">Kaart van de kust</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="uitleg">Op de stip: vraagprijs {TOT}. Ga met de muis over een stip voor de andere '
-                'cijfers. Grote stip = hele gemeente (centrum), kleine stip = kustdistrict.</div>',
-                unsafe_allow_html=True)
+
+
+def kaart_legende():
+    """Kleine legende onder de kaart (vervangt de uitlegtekst): stipgrootte + betekenis van het getal."""
+    st.markdown(
+        f'''<div class="legende">
+        <span><i class="stip groot"></i>hele gemeente (centrum)</span>
+        <span><i class="stip klein"></i>kustdistrict</span>
+        <span><b>getal</b> = vraagprijs {TOT} per m²</span>
+        </div>''',
+        unsafe_allow_html=True)
+
+
+def kaart(basis, districten, stijging, gekozen):
     gem = stijging[stijging["soort"] == "gemeente"]
     g = basis[(basis["jaar"] == TOT) & basis["gemeente"].isin(gekozen)].merge(
         gem[["gemeente", "prijs_m2_stijging_pct", "aantal_verkopen_stijging_pct"]], on="gemeente")
@@ -298,6 +353,7 @@ def kaart(basis, districten, stijging, gekozen):
     fig.update_layout(map=dict(style="carto-positron", center=dict(lat=38.07, lon=-0.70), zoom=9.2),
                       height=480, margin=dict(l=0, r=0, t=0, b=0), hoverlabel=dict(bgcolor="white", font_size=12))
     toon_figuur(fig)
+    kaart_legende()
 
 
 # --------------------------------------------------------------------------
@@ -305,9 +361,6 @@ def kaart(basis, districten, stijging, gekozen):
 # --------------------------------------------------------------------------
 def prijsgrafiek(basis, districten, gekozen):
     st.markdown('<div class="sectie">Vraagprijs per m²</div>', unsafe_allow_html=True)
-    st.markdown('<div class="uitleg">Volle lijn = hele gemeente. Streepjes, puntjes of streep-punt = kustdistrict, '
-                'in de kleur van de gemeente. Ontbreekt een jaar, dan is er een gat in de lijn.</div>',
-                unsafe_allow_html=True)
     fig = go.Figure()
     for g in gekozen:
         df = basis[basis["gemeente"] == g]
@@ -326,15 +379,13 @@ def prijsgrafiek(basis, districten, gekozen):
 
 def stijgingsgrafiek(stijging, gekozen):
     st.markdown(f'<div class="sectie">Prijsstijging {VAN} → {TOT}</div>', unsafe_allow_html=True)
-    st.markdown('<div class="uitleg">Van hoog naar laag; boven de gemeentes, onder de kustdistricten '
-                '(rij 103).</div>', unsafe_allow_html=True)
     s = stijging[stijging["gemeente"].isin(gekozen)]
     gem = s[s["soort"] == "gemeente"].sort_values("prijs_m2_stijging_pct", ascending=False, na_position="last")
     dist = s[s["soort"] == "kustdistrict"].sort_values("prijs_m2_stijging_pct", ascending=False, na_position="last")
     dist_namen = dist["district"] + " (" + dist["gemeente"] + ")"          # gemeente tussen haakjes (rij 107)
     groepen = [(gem, gem["gemeente"], "Gemeentes", 1.0), (dist, dist_namen, "Kustdistricten", 0.7)]
     groepen = [gr for gr in groepen if len(gr[0])]
-    fig = make_subplots(rows=len(groepen), cols=1, shared_xaxes=True, vertical_spacing=0.12,
+    fig = make_subplots(rows=len(groepen), cols=1, shared_xaxes=True, vertical_spacing=0.22,
                         row_heights=[len(gr[0]) for gr in groepen], subplot_titles=[gr[2] for gr in groepen])
     for rij, (df, namen, _, dekking) in enumerate(groepen, start=1):
         waarden = df["prijs_m2_stijging_pct"]
@@ -346,11 +397,15 @@ def stijgingsgrafiek(stijging, gekozen):
             hovertemplate="%{y}: %{text}<extra></extra>"), row=rij, col=1)
         fig.update_yaxes(autorange="reversed", row=rij, col=1)
     stijl(fig, hoogte=430, legende=False)
-    fig.update_layout(hovermode="closest", bargap=0.35)
+    fig.update_layout(hovermode="closest", bargap=0.35, margin=dict(t=30))
     fig.update_xaxes(ticksuffix=" %", range=[0, stijging["prijs_m2_stijging_pct"].max() * 1.22], gridcolor="#EEF0F2",
                      showgrid=True)
     fig.update_yaxes(gridcolor="rgba(0,0,0,0)")
-    fig.update_annotations(font=dict(size=13, color="#5B6770"), x=0, xanchor="left")
+    # gedeelde as: Plotly toont de getallen enkel onderaan; ook onder het bovenste blok tonen,
+    # anders staan daar streepjes zonder getallen (rij 127)
+    fig.update_xaxes(showticklabels=True)
+    # subtitels "Gemeentes" / "Kustdistricten": vet, donker en iets hoger, zodat ze niet tegen de staven kleven (rij 126)
+    fig.update_annotations(font=dict(size=14, color="#1F2A33", weight="bold"), x=0, xanchor="left", yshift=8)
     toon_figuur(fig)
 
 
@@ -360,11 +415,6 @@ def stijgingsgrafiek(stijging, gekozen):
 def versnellingsgrafiek(basis, gekozen):
     a, b = f"{VAN + 1}–{VAN + 2}", f"{TOT - 1}–{TOT}"
     st.markdown('<div class="sectie">Versnelling van de prijsstijging</div>', unsafe_allow_html=True)
-    st.markdown(f'<div class="uitleg">Gemiddelde stijging van de vraagprijs per jaar: open bolletje = {a} '
-                f'(toen), vol bolletje = {b} (nu). Hoe langer het lijntje, hoe sterker de versnelling; het getal '
-                'rechts = versnelling in procentpunten. Gesorteerd van sterkste naar zwakste versnelling. '
-                'De bovenste rij is het gemiddelde van alle 6 gemeentes, zoals in de conclusie.</div>',
-                unsafe_allow_html=True)
     vers = versnelling(basis)
     gem_naam = "<b>Gemiddelde 6 gemeentes</b>"
     rijen = pd.concat([
@@ -409,8 +459,8 @@ def versnellingsgrafiek(basis, gekozen):
 # --------------------------------------------------------------------------
 def verkopengrafiek(basis, gekozen):
     st.markdown('<div class="sectie">Verkochte tweedehandswoningen</div>', unsafe_allow_html=True)
-    st.markdown('<div class="uitleg">Per 1.000 inwoners toont hoe <i>in trek</i> een gemeente is, los van haar '
-                'grootte. Geen cijfers per kustdistrict.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="uitleg">Verkochte woningen per 1.000 inwoners. Geen cijfers per kustdistrict.</div>',
+                unsafe_allow_html=True)
     maat = filter_maat()
     kolom, eenheid = (("aantal_verkopen", "verkopen") if maat == MATEN[0]
                       else ("verkopen_per_1000", "per 1.000 inw."))
@@ -432,8 +482,8 @@ def coronagrafiek(kwartalen, gekozen):
     """Gewoon zichtbaar, geen uitklapblok meer (rij 108, herziet rij 38)."""
     st.markdown('<div class="sectie">Corona van dichterbij: verkopen en vraagprijs per kwartaal</div>',
                 unsafe_allow_html=True)
-    st.markdown('<div class="uitleg">De lichte band = 2e kwartaal 2020 (lockdown in Spanje). '
-                'Enkel de 6 gemeentes; geen kwartaalcijfers per kustdistrict (rij 82).</div>',
+    st.markdown('<div class="uitleg">2e kwartaal 2020 (lockdown in Spanje). '
+                'Enkel de 6 gemeentes; geen kwartaalcijfers per kustdistrict.</div>',
                 unsafe_allow_html=True)
     perioden = list(dict.fromkeys(kwartalen["periode"]))
     lockdown = perioden.index("2020 K2")
@@ -449,8 +499,10 @@ def coronagrafiek(kwartalen, gekozen):
         fig.add_vrect(x0=lockdown - 0.5, x1=lockdown + 0.5, fillcolor=ZAND, opacity=0.6, line_width=0,
                       layer="below")
         stijl(fig, hoogte=340)
-        fig.update_xaxes(tickangle=-45, tickvals=[p for p in perioden if p.endswith("K1")],
-                         ticktext=[p[:4] for p in perioden if p.endswith("K1")])
+        # jaartallen recht (niet schuin) en legende lager, zodat as en legende niet overlappen (rij 126)
+        fig.update_xaxes(tickangle=0, tickvals=[p for p in perioden if p.endswith("K1")],
+                         ticktext=[p[:4] for p in perioden if p.endswith("K1")], tickfont=dict(size=12))
+        fig.update_layout(legend=dict(y=-0.18))
         with kolom:
             st.markdown(f"**{titel}**")
             toon_figuur(fig)
@@ -463,16 +515,15 @@ MATEN = ["absoluut aantal", "per 1.000 inwoners"]
 
 
 def filter_gemeentes():
-    """Filter gemeentes in het tabblad zelf (proef, branch filters-in-tab): balk net boven de kaart.
+    """Filter gemeentes in het tabblad zelf: balk boven de kop "Kaart van de kust" (rij 125).
 
     Werkt op de kaart en alle grafieken; de kerncijfers erboven en de conclusies niet (rij 41).
     """
     with st.container(border=True):
         keuze = st.pills(
             "Gemeentes op de kaart en in de grafieken (klik om aan of uit te zetten · noord → zuid)",
-            VOLGORDE, selection_mode="multi", default=VOLGORDE, key="filter_gemeentes")
-        st.caption("Kustdistricten horen bij hun gemeente: zet je Elche of Orihuela uit, dan verdwijnen ook hun "
-                   "kustdistricten. De kerncijfers hierboven en de conclusies onderaan tonen altijd alle 6.")
+            VOLGORDE, selection_mode="multi", default=VOLGORDE, key="filter_gemeentes",
+            label_visibility="collapsed")      # label verborgen op het scherm (rij 124)
     return [g for g in VOLGORDE if g in (keuze or [])]       # vaste volgorde, ongeacht de klikvolgorde
 
 
@@ -488,8 +539,9 @@ def toon():
     basis, districten, stijging, kwartalen = data()
 
     titel()
-    kaartjes(basis, stijging)
-    gekozen = filter_gemeentes()
+    kaartjes(basis, districten, stijging)
+    gekozen = filter_gemeentes()          # boven de kop "Kaart van de kust" (rij 125)
+    kaart_kop()
 
     if gekozen:
         kaart(basis, districten, stijging, gekozen)
@@ -507,5 +559,3 @@ def toon():
     # conclusies + beperkingen onderaan (rij 106, herziet rij 38); altijd alle 6 gemeentes (rij 41)
     st.divider()
     conclusies(basis, stijging, kwartalen)
-    st.caption("Bronnen en werkwijze: zie het tabblad *Data en pijplijn* en README.md. "
-               "Elke keuze verwijst naar een rij in beslissingslog.md.")

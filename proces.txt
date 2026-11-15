@@ -2494,3 +2494,186 @@ STAND VAN ZAKEN 12/11: dashboard op tabblad 1 (main, GitHub cc6d6e7),
   PDF-stap 5 klaar. Open: Notariaat (zie hierboven), conclusies goedkeuren
   (CONCEPT), waaroms rij 105, 107-113, 117, 118; PDF-stap 6 (pytest) en
   7 (deploy + requirements.txt).
+
+[2026-11-15] NOTARIAAT - OPEN VRAAG 1 (antwoordmail)
+Ilse: plakt de antwoordmail van Notariado:
+  "Actualmente hemos tenido que limitar los accesos desde fuera de España
+  de manera temporal. De todas maneras, pediré que extraigan esos datos y
+  se los facilitaré lo antes posible. Una aclaración: cuando pide los
+  datos, ¿le interesa los promedios anuales, verdad?"
+Wat ik nu doe: de mail vertalen en nagaan wat hij zegt over open vraag 1
+  (woningtype + bronvermelding) en vraag 2 (publiek op GitHub).
+AI: vertaling: "We hebben de toegang van buiten Spanje tijdelijk moeten
+  beperken. Ik vraag wel om de gegevens eruit te halen en bezorg ze u zo
+  snel mogelijk. Een verduidelijking: u wilt de jaargemiddelden, toch?"
+  - Mailvraag 1 (toegang beperkt?) -> beantwoord: ja, tijdelijk, van buiten
+    Spanje. Verklaart "Web Page Blocked".
+  - Jaargemiddelden: klopt met PIN 4525.csv (1 rij per gemeente x jaar).
+  - Woningtype: NIET vermeld. Enkel onrechtstreeks: ze vragen enkel na
+    over "jaargemiddelden", dus de rest van de vraag ("pisos de segunda
+    mano") lijkt aanvaard. Aanwijzing, geen bevestiging.
+  - Bronvermelding / publiek gebruik: NIET vermeld. Geen toestemming en
+    geen verbod. Ilse beloofde zelf: uso exclusivamente educativo + bron
+    Consejo General del Notariado.
+  Gevraagd: kwam PIN 4525.csv met een tweede mail (met tekst)? Zo ja, die
+  kan vraag 1 en 2 alsnog beantwoorden.
+Status: wacht op antwoord Ilse. Nog niets gewijzigd buiten proces.txt.
+Ilse: "stel de mail op in een txt bestandje"
+AI: mail_notariaat_2.txt aangemaakt (Spaans + Nederlandse vertaling, zelfde
+  opbouw als mail_notariaat.txt). Inhoud: bedanking + bevestiging
+  jaargemiddelden; vraag 1 enkel pisos de segunda mano of ook
+  eengezinswoningen/nieuwbouw?; vraag 2 mag het bestand of de cijfers in
+  een publieke GitHub-repo met bronvermelding? (alternatief aangeboden:
+  enkel analyseresultaten tonen); presentatie 17/11 vermeld.
+  In te vullen: naam afzender, eigen naam. Nog niet verstuurd, niets
+  gecommit.
+Status: wacht tot Ilse de mail nakijkt/verstuurt.
+Ilse: "kan je even de bron idealista openen in mijn browser"
+AI: enige volledige Idealista-link in README.md (Guardamar del Segura,
+  historico) geopend met Start-Process. Links andere 9 gebieden staan nog
+  als "nog aan te vullen" in README.md.
+Ilse: "weet jij wat m2 inhouden (totale oppervlakte, bewoonbare oppervlakte)?"
+AI: opgezocht (3 webzoekopdrachten):
+  - Ministerie (taxatiewaarde): m2 BEBOUWDE oppervlakte (superficie
+    construida) - bevestigd door secundaire bronnen (Gobierno Vasco,
+    Arquitasa), officiele ficha niet gelezen.
+  - Idealista (vraagprijs): geen officiele methodologie gevonden.
+    Advertenties tonen meestal "m2 construidos"; waarschijnlijk bebouwd,
+    NIET bevestigd.
+  - Notariaat (verkoopprijs): geen methodologie gevonden. Oppervlakte
+    komt uit de akte; waarschijnlijk bebouwd, NIET bevestigd.
+  Voorstel: de vraag (construida of util?) toevoegen aan
+  mail_notariaat_2.txt. Wacht op Ilse.
+Ilse: "kan je aan de app bij kerncijfers 2025 melding maken van de
+  districten?"
+AI: 4 vormen voorgelegd (regel onder de kaartjes / in het kaartje van
+  Elche en Orihuela / tweede rij kaartjes / enkel verwijzing).
+Ilse: "Tweede rij kaartjes" (beslissingslog rij 119)
+AI: dashboard.py, functie kaartjes(): krijgt nu ook `districten` mee;
+  onder de 6 gemeentekaartjes een tussenkop "Kustdistricten - enkel
+  vraagprijs, geen verkopen per district" + 4 kleinere kaartjes (nieuwe
+  CSS-klasse .kaartje.klein) in de kleur van hun gemeente, naam met
+  gemeente tussen haakjes, vraagprijs 2025 + stijging sinds 2019.
+  Zelfde 6 kolommen als de rij erboven (laatste 2 leeg), zodat de
+  breedtes gelijk blijven. Ontbrekende waarde -> "geen data" (rij 40).
+  AppTest: 0 fouten. Getoond: Arenales del Sol 3.150 +74,1 %, El Altet
+  - Balsares 1.824 +64,8 %, La Marina 2.253 +47,6 %, Orihuela Costa
+  2.809 +49,2 %. Niet gecommit.
+Ilse: "bij conclusie 'concept na te lezen' weg"
+AI: dashboard.py: badge "CONCEPT · nog na te lezen" bij de kop Conclusies
+  verwijderd, ongebruikte CSS-regel .badge ook weg, docstring aangepast.
+  Beslissingslog rij 120 (sluit rij 101 af: conclusies goedgekeurd).
+  AppTest: 0 fouten. Niet gecommit.
+  Let op: kiest Ilse later optie a (Notariaat = prijsbron), dan
+  veranderen enkele conclusies (duurste 2025 Santa Pola i.p.v. Pilar).
+Ilse: 8 wijzigingen aan het dashboard (1 kop "Volledige gemeentes" boven
+  de 6 kaartjes; 2 filter net boven de kaart; 3-5 uitleg weg bij
+  prijsgrafiek, staafdiagram stijging, versnellingsgrafiek; 6 uitleg
+  verkopen -> "Verkochte woningen per 1.000 inwoners. Geen cijfers per
+  kustdistrict."; 7 uitleg corona -> "2e kwartaal 2020 (lockdown in
+  Spanje). Enkel de 6 gemeentes; geen kwartaalcijfers per kustdistrict.";
+  8 bronnenregel onderaan weg). Tussendoor: "onthoud alles, geen
+  internet" -> "probeer nog eens" -> "probeer opnieuw".
+AI: alle 8 uitgevoerd in dashboard.py. Voor punt 2: kop + uitleg van de
+  kaart in een aparte functie kaart_kop(), daarna de filter, daarna de
+  kaart. Uitleg onder de filter ("Kustdistricten horen bij hun
+  gemeente...") laten staan. AppTest: 0 fouten, ook met alle gemeentes
+  uitgezet. Beslissingslog rij 121. Niet gecommit.
+Ilse: "kan je de tekst 'Op de stip: ...' verwijderen en een kleine
+  legende maken?"
+AI: uitlegtekst weg uit kaart_kop(); nieuwe functie kaart_legende() toont
+  net onder de kaart een kleine legende (CSS .legende): grote grijze stip
+  = hele gemeente (centrum), kleine grijze stip = kustdistrict, "getal =
+  vraagprijs 2025 per m²". Eerst een voorbeeldgetal (2.347 €) gebruikt,
+  vervangen door "getal" (vast getal zou verouderen). De muis-tip staat
+  er niet meer. AppTest: 0 fouten. Beslissingslog rij 122. Niet gecommit.
+Ilse: "doe de tekst 'Kustdistricten horen bij hun gemeente: ...' weg"
+AI: st.caption onder de gemeentefilter verwijderd (filter_gemeentes);
+  werking filter ongewijzigd. AppTest: 0 fouten, geen captions meer op
+  tabblad 1. Beslissingslog rij 123. Niet gecommit.
+Ilse: "doe de tekst 'Gemeentes op de kaart en in de grafieken (klik om
+  aan of uit te zetten · noord → zuid)' weg"
+AI: st.pills vereist een label -> label blijft in de code maar is
+  verborgen met label_visibility="collapsed" (schermlezers lezen het nog).
+  AppTest: 0 fouten. Beslissingslog rij 124. Niet gecommit.
+Ilse: "zet de filter opnieuw boven 'kaart van de kust'"
+AI: in toon(): filter_gemeentes() weer voor kaart_kop() (zoals rij 116,
+  herziet rij 121). Docstrings aangepast. AppTest: 0 fouten, ook met alle
+  gemeentes uit. Beslissingslog rij 125. Niet gecommit.
+AI: filter_gemeentes() staat weer voor kaart_kop() (rij 125). AppTest: 0 fouten.
+Ilse (tussendoor): "het woord 'gemeentes' bij prijsstijging is niet mooi
+  leesbaar" + "aantal verkopen en vraagprijs €/m2: de cijfers op de x-as
+  zijn niet mooi leesbaar" + "probeer opnieuw" + "onthoud alles tot we
+  opnieuw internet hebben"
+AI: eerst de open wensen in het geheugen gezet
+  (open-dashboard-wensen-15-11.md). Dan:
+  1 stijgingsgrafiek: subtitels (annotaties van make_subplots) vet,
+    donkerder (#1F2A33), maat 14, yshift 8; vertical_spacing 0.12 -> 0.16;
+    bovenmarge 30 px.
+  2 coronagrafiek: tickangle -45 -> 0 (rechte jaartallen), tickfont 12,
+    legende lager (y -0.12 -> -0.18) zodat as en legende niet overlappen.
+  AppTest: 0 fouten. Hoe het eruitziet kon ik niet zelf bekijken (kaleido
+  voor afbeeldingen niet geinstalleerd; niet geinstalleerd zonder vragen).
+  Beslissingslog rij 126. Niet gecommit.
+Ilse: "prijsstijging gemeentes: de getallen boven 'kustdistricten' zijn
+  niet leesbaar"
+AI: grafiek nagekeken: x-as van het bovenste blok heeft geen getallen
+  (gedeelde as). Schermafbeelding gemaakt met Edge headless (450 px
+  breed, scratchpad stijging.png): alle getallen leesbaar, niets
+  overlapt. Verschil met de app mogelijk door het Streamlit-thema of een
+  andere breedte. Gevraagd: schermafbeelding van wat Ilse ziet. Nog niets
+  gewijzigd.
+Ilse: "zie C:\Temp\test3.png" (schermafbeelding uit de app)
+AI: oorzaak gevonden: onder het blok Gemeentes stonden streepjes op de
+  x-as maar geen getallen (make_subplots met shared_xaxes toont de
+  getallen enkel onder het onderste blok). Oplossing:
+  fig.update_xaxes(showticklabels=True) -> getallen ook onder het
+  bovenste blok; vertical_spacing 0.16 -> 0.22 zodat ze niet tegen de
+  titel Kustdistricten botsen. Gecontroleerd met schermafbeelding (Edge
+  headless, scratchpad stijging2.png): leesbaar, geen overlap. AppTest:
+  0 fouten. Beslissingslog rij 127. Niet gecommit.
+Ilse: "pas aan in de conclusie '... Elche het goedkoopst. De andere vier
+  liggen dicht bij elkaar. Arenales del Sol is zelfs duurder dan elke
+  gemeente als geheel.' naar '... Elche lijkt het goedkoopste, maar
+  Arenales del Sol is duurder dan elke gemeente als geheel. De kuststreek
+  van Elche scoort beter dan het binnenland.'"
+AI: eerst nagekeken in de data (2025): Arenales del Sol 3.150 > Pilar
+  3.053 (duurste gemeente); alle 3 kustdistricten van Elche (3.150 /
+  2.253 / 1.824) > Elche als geheel (1.690). Nieuwe zin ingebouwd in
+  conclusies() met dezelfde controle als de andere zinnen: hij verschijnt
+  enkel als de data hem bevestigt, anders de vroegere tekst. Eerste
+  poging mislukte (\n in het script werd een echte regeleinde, zoektekst
+  niet gevonden, niets weggeschreven); tweede poging met raw strings OK.
+  AppTest: 0 fouten, zin verschijnt zoals gevraagd. Beslissingslog rij
+  128. Niet gecommit.
+  Kanttekening: "binnenland" = vergelijking met Elche als GEHEEL (incl.
+  kust); "scoort beter" = hogere vraagprijs, niet hogere stijging (La
+  Marina +47,6 % < Elche +54,2 %).
+Ilse: "pas nog aan: '...scoort beter dan het binnenland.' naar '...scoort
+  beter dan het binnenland van Elche.'"
+AI: zin aangepast in conclusies() ("binnenland van {goedkoop}", dus
+  Elche). AppTest: 0 fouten, zin klopt. Beslissingslog rij 129. Niet
+  gecommit.
+Ilse: "leg mij in makkelijke taal de haltergrafiek uit"
+AI: uitleg gegeven met de echte cijfers uit versnelling() (Elche als
+  voorbeeld: 2020 +3,3 %, 2021 -0,8 % -> gemiddeld +1,3 %/jaar; 2024
+  +12,6 %, 2025 +17,7 % -> +15,1 %/jaar; versnelling +13,9 pp). Gemiddelde
+  6 gemeentes: 1,4 -> 14,4 %/jaar = +12,9 pp. Niets gewijzigd.
+Ilse: "vermeld in de kaartjes van de gemeentes waarover het gaat bv
+  Elche: +54,2 % sinds 2019 => vermeld dat het om de prijsstijging gaat
+  en vermeld waarover die 13,2 gaat bij verkoop per 1000 inwoners"
+AI: kaartjes() aangepast: "{x} prijsstijging sinds 2019" (gemeente- en
+  districtkaartjes, voor eenvormigheid) en "{x} verkochte
+  tweedehandswoningen per 1.000 inwoners in 2025". AppTest: 0 fouten.
+  Beslissingslog rij 130. Niet gecommit.
+Ilse: "Verander '13,2 verkochte tweedehandswoningen per 1.000 inwoners in
+  2025' naar '13,2 verkochte woningen per 1.000 inwoners' enzo verder
+  voor de andere kaartjes"
+AI: verkoopregel in kaartjes() aangepast (geldt voor alle 6
+  gemeentekaartjes; districtkaartjes hebben geen verkoopregel). AppTest:
+  0 fouten. Beslissingslog rij 131. Niet gecommit.
+Ilse: "commit en push"
+AI: mail_notariaat_2.txt toegevoegd aan .gitignore (zoals de eerste
+  mail). PIN 4525.csv blijft buiten git. Commit met dashboard.py,
+  beslissingslog.md (rij 119-131), proces.txt, .gitignore; samen met de
+  nog niet gepushte commit van 12/11 naar GitHub gepusht.
